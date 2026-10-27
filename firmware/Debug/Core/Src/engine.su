@@ -1,7 +1,10 @@
 ../Drivers/CMSIS/Include/core_cm0plus.h:850:22:__NVIC_SetPriority	24	static
 ../Core/Src/engine.c:11:6:configEngine	8	static
-../Core/Src/engine.c:63:13:startPulsePacket	8	static
-../Core/Src/engine.c:71:6:stopPump	8	static
-../Core/Src/engine.c:77:13:measureHV_Pump	8	static
-../Core/Src/engine.c:82:6:mainEngine	8	static
-../Core/Src/engine.c:96:6:TIM16_IRQHandler	8	static
+../Core/Src/engine.c:103:13:startPulsePacket	8	static
+../Core/Src/engine.c:111:6:stopPump	8	static
+../Core/Src/engine.c:117:17:readADC	16	static
+../Core/Src/engine.c:125:17:getVDD	24	static
+../Core/Src/engine.c:133:17:readVoltage	40	static
+../Core/Src/engine.c:144:13:measureHV_Pump	16	static
+../Core/Src/engine.c:152:6:mainEngine	8	static
+../Core/Src/engine.c:166:6:TIM16_IRQHandler	8	static
