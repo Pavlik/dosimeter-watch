@@ -16,7 +16,7 @@
 
 
 
-#define IMPULSE_COUNT 2
+#define IMPULSE_COUNT 1
 
 void configEngine();
 void mainEngine();
