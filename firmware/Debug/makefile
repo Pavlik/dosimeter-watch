@@ -60,8 +60,8 @@ all: main-build
 main-build: dosimeter-watch.elf secondary-outputs
 
 # Tool invocations
-dosimeter-watch.elf dosimeter-watch.map: $(OBJS) $(USER_OBJS) C:\!USER\ DATA\Projects\dosimeter-watch\firmware\STM32G030F6PX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "dosimeter-watch.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"C:\!USER DATA\Projects\dosimeter-watch\firmware\STM32G030F6PX_FLASH.ld" --specs=nosys.specs -Wl,-Map="dosimeter-watch.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+dosimeter-watch.elf dosimeter-watch.map: $(OBJS) $(USER_OBJS) C:\Users\navumchyk\Desktop\PROJECTS\dosimeter-watch\firmware\STM32G030F6PX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "dosimeter-watch.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"C:\Users\navumchyk\Desktop\PROJECTS\dosimeter-watch\firmware\STM32G030F6PX_FLASH.ld" --specs=nosys.specs -Wl,-Map="dosimeter-watch.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
