@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "uart_transmit.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -89,18 +89,71 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
-  //RCC->IOPENR |= RCC_IOPENR_GPIOAEN;
+
  	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+
+ 	/*GPIO SYSTEM LED CONFIG START*/
 
  	GPIOA->MODER &= ~GPIO_MODER_MODE3;
  	GPIOA->MODER |= GPIO_MODER_MODE3_0;//|= (1Ul << GPIO_MODER_MODE3_Pos); // GPIO_MODER_MODE3_0;
+
+ 	/*GPIO SYSTEM LED CONFIG END*/
+
+ 	/*TIM16 CONFIG START*/
+
+ 	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
+
+ 	TIM16->PSC = 24000-1;
+ 	TIM16->ARR = 100-1;
+ 	TIM16->CNT = 0;
+
+ 	TIM16->DIER |= TIM_DIER_UIE;
+ 	NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 1);
+ 	NVIC_EnableIRQ(TIM1_UP_TIM16_IRQn);
+
+ 	TIM16->CR1 |= TIM_CR1_CEN;
+
+ 	/*TIM16 CONFIG END*/
+
+ 	/*GPIO UART RX/TX PA9-PA10 CONFIG START*/
+
+ 	 GPIOA->MODER &= ~GPIO_MODER_MODE10;
+ 	 GPIOA->MODER |= GPIO_MODER_MODE10_1; // 10 - af
+ 	 GPIOA->MODER &= ~GPIO_MODER_MODE9;
+ 	 GPIOA->MODER |= GPIO_MODER_MODE9_1; // 10 - af
+
+ 	 GPIOA->AFR[1] |= (7UL << GPIO_AFRH_AFSEL10_Pos) | (7UL << GPIO_AFRH_AFSEL9_Pos); // set PA9 and PA10 as AF7
+
+ 	/*GPIO UART RX/TX PA9-PA10 CONFIG END*/
+
+ 	/*UART1 CONFIG START*/
+
+ 	 RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+ 	 RCC->CCIPR &= ~RCC_CCIPR_USART1SEL;
+ 	 USART1->CR1 &= ~USART_CR1_UE;
+
+ 	 /*Baudrate = 115200* BRR = 24000000 / 115200 = 208.33*/
+
+ 	 USART1->BRR = 208;
+
+ 	 USART1->CR1 = USART_CR1_TE | USART_CR1_RE; // ENABLE UART1 RX/TX
+ 	 USART1->CR1 |= USART_CR1_UE; // ENABLE UART1
+
+ 	uart_send_init();
+
+ 	/*UART1 CONFIG END*/
+
+ 	char buf[32] = {0,};
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  GPIOA->ODR ^= GPIO_ODR_OD3;
+	  snprintf(buf, sizeof(buf), "Hello UART1! \n");
+	  uart_send_string_it(buf);
+	  //GPIOA->ODR ^= GPIO_ODR_OD3;
 	  HAL_Delay(500);
     /* USER CODE END WHILE */
 
@@ -175,7 +228,14 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void TIM1_UP_TIM16_IRQHandler(void)
 
+{
+    if (TIM16->SR & TIM_SR_UIF) {
+        TIM16->SR &= ~TIM_SR_UIF; // Сброс флага
+        GPIOA->ODR ^= GPIO_ODR_OD3;// Ваш код
+    }
+}
 /* USER CODE END 4 */
 
 /**
