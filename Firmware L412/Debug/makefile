@@ -60,8 +60,8 @@ all: main-build
 main-build: dosimetr-watch-L412.elf secondary-outputs
 
 # Tool invocations
-dosimetr-watch-L412.elf dosimetr-watch-L412.map: $(OBJS) $(USER_OBJS) C:\!USER\ DATA\Projects\dosimeter-watch\Firmware\ L412\STM32L412KBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "dosimetr-watch-L412.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\!USER DATA\Projects\dosimeter-watch\Firmware L412\STM32L412KBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="dosimetr-watch-L412.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+dosimetr-watch-L412.elf dosimetr-watch-L412.map: $(OBJS) $(USER_OBJS) C:\Users\navumchyk\Desktop\PROJECTS\dosimeter-watch\Firmware\ L412\STM32L412KBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "dosimetr-watch-L412.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\navumchyk\Desktop\PROJECTS\dosimeter-watch\Firmware L412\STM32L412KBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="dosimetr-watch-L412.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

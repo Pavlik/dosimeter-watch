@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "uart_transmit.h"
+#include "adc_l412.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -104,7 +105,7 @@ int main(void)
  	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
 
  	TIM16->PSC = 24000-1;
- 	TIM16->ARR = 100-1;
+ 	TIM16->ARR = 1000-1;
  	TIM16->CNT = 0;
 
  	TIM16->DIER |= TIM_DIER_UIE;
@@ -151,10 +152,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  snprintf(buf, sizeof(buf), "Hello UART1! \n");
-	  uart_send_string_it(buf);
+	  //snprintf(buf, sizeof(buf), "Hello UART1! \n");
+	  //uart_send_string_it(buf);
 	  //GPIOA->ODR ^= GPIO_ODR_OD3;
-	  HAL_Delay(500);
+	  //HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
