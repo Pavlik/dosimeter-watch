@@ -12,6 +12,27 @@
 #include "stm32l4xx.h"
 #include "stdbool.h"
 
+typedef enum
+{
+    ADC_CH0 = 0,
+    ADC_CH1,
+    ADC_CH2,
+    ADC_CH3,
+    ADC_CH4,
+    ADC_CH5,
+    ADC_CH6,
+    ADC_CH7,
+    ADC_CH8,
+    ADC_CH9,
+    ADC_CH10,
+    ADC_CH11,
+    ADC_CH12,
+    ADC_CH13,
+    ADC_CH14,
+    ADC_CH15,
+    ADC_CH16
+} Adc_Channel;
+
 
 typedef enum
 {

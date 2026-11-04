@@ -176,8 +176,8 @@ int main(void)
 		  static uint8_t adc_busy = 0;
 		  if (!adc_busy)
 		  {
-		      ADC_SelectChannel(5);
-		      ADC_SetSampleTime(5, ADC_SAMPLE_640_5CYCLES);
+		      ADC_SelectChannel(ADC_CH5);
+		      ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_640_5CYCLES);
 		      if(!ADC_IsBusy())
 		    	  ADC_Start();
 

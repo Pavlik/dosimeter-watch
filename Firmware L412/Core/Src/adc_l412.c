@@ -9,7 +9,22 @@
 
 void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
 {
-	ADC1->SMPR1 |= sample_time << (channel * 3UL);
+
+
+
+	if(channel <= 9)
+	{
+		uint32_t pos = channel * 3U;
+		ADC1->SMPR1 &= ~(0x7U << pos);
+		ADC1->SMPR1 |= ((uint32_t)sample_time << pos);
+	}
+	else if(channel > 9 )
+	{
+		uint32_t pos = (channel - 10U) * 3U;
+		ADC1->SMPR2 &= ~(0x7U << pos);
+		ADC1->SMPR2 |= sample_time << pos;
+	}
+
 }
 
 void ADC_SelectChannel(uint8_t channel)
