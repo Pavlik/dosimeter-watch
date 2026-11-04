@@ -56,4 +56,9 @@ uint16_t ADC_ReadChannel(uint8_t channel)
     return (uint16_t)ADC1->DR;
 }
 
+void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
+{
+	ADC1->SMPR1 |= sample_time << (channel * 3UL);
+}
+
 
