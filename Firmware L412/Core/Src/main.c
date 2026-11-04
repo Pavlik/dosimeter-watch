@@ -186,23 +186,6 @@ int main(void)
 		  while(DMA1_Channel1->CNDTR != 0);
 		  adc_ch5_value = ADC_Read_DMA();
 		  tim16_it_flag = 0;
-//		  static uint8_t adc_busy = 0;
-//		  if (!adc_busy)
-//		  {
-//		      if(!ADC_IsBusy())
-//		    	  ADC_Start();
-//		      adc_busy = 1;
-//		  }
-//		  else
-//		  {
-//		      if (ADC_IsConversionComplete())
-//		      {
-//		    	  adc_ch5_value = ADC_GetValue();
-//		          adc_busy = 0;
-//				  tim16_it_flag = 0;
-//		      }
-//		  }
-
 
 		  adc_buf[0] =(uint8_t)(adc_ch5_value >> 8);
 		  adc_buf[1] =(uint8_t)(adc_ch5_value & 0x00FF);
