@@ -7,6 +7,17 @@
 
 #include "adc_l412.h"
 
+void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
+{
+	ADC1->SMPR1 |= sample_time << (channel * 3UL);
+}
+
+void ADC_SelectChannel(uint8_t channel)
+{
+    ADC1->SQR1 &= ~ADC_SQR1_SQ1;
+    ADC1->SQR1 |= (0UL << ADC_SQR1_L_Pos) | (channel << ADC_SQR1_SQ1_Pos);
+}
+
 void configADC(void)
 {
 	if((RCC->AHB2ENR & RCC_AHB2ENR_GPIOAEN) != 1)
@@ -31,11 +42,11 @@ void configADC(void)
 	ADC1->CR |= ADC_CR_ADCAL;
 	while (ADC1->CR & ADC_CR_ADCAL);
 
-	ADC1->SMPR1 |= 3UL << ADC_SMPR1_SMP5_Pos;
+	ADC_SetSampleTime(5, ADC_SAMPLE_640_5CYCLES);
 
 	ADC1->CFGR = 0;
 
-	ADC1->SQR1 = 0UL << ADC_SQR1_L_Pos | (5U << ADC_SQR1_SQ1_Pos);
+	ADC_SelectChannel(5);
 
     ADC1->ISR |= ADC_ISR_ADRDY;
     ADC1->CR |= ADC_CR_ADEN;
@@ -56,9 +67,6 @@ uint16_t ADC_ReadChannel(uint8_t channel)
     return (uint16_t)ADC1->DR;
 }
 
-void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
-{
-	ADC1->SMPR1 |= sample_time << (channel * 3UL);
-}
+
 
 

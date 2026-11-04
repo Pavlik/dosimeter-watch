@@ -24,10 +24,14 @@ typedef enum
 	ADC_SAMPLE_640_5CYCLES
 }Adc_Sample_cycles;
 
+void ADC_SetSampleTime(uint8_t channel, uint8_t sample_time);
+void ADC_SelectChannel(uint8_t channel);
+
+
 void configADC(void);
 
+
 uint16_t ADC_ReadChannel(uint8_t channel);
-void ADC_SetSampleTime(uint8_t channel, uint8_t sample_time);
 
 
 
