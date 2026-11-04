@@ -13,6 +13,8 @@
 
 void configADC(void);
 
+uint16_t ADC_ReadChannel(uint8_t channel);
+
 
 
 

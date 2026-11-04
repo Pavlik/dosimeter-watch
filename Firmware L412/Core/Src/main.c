@@ -43,7 +43,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+volatile uint8_t tim16_it_flag = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -140,11 +140,29 @@ int main(void)
  	 USART1->CR1 = USART_CR1_TE | USART_CR1_RE; // ENABLE UART1 RX/TX
  	 USART1->CR1 |= USART_CR1_UE; // ENABLE UART1
 
+
+ 	configADC();
  	uart_send_init();
+
+
 
  	/*UART1 CONFIG END*/
 
  	char buf[32] = {0,};
+ 	uint16_t adc_ch5_value = 0;
+
+ 	HAL_Delay(1000);
+ 	snprintf(buf, sizeof(buf),  "CR   = %08lX\r\n", ADC1->CR);
+ 	uart_send_string_it(buf);
+ 	snprintf(buf, sizeof(buf),  "ISR  = %08lX\r\n", ADC1->ISR);
+ 	uart_send_string_it(buf);
+ 	snprintf(buf, sizeof(buf),  "CFGR = %08lX\r\n", ADC1->CFGR);
+ 	uart_send_string_it(buf);
+ 	snprintf(buf, sizeof(buf),  "SQR1 = %08lX\r\n", ADC1->SQR1);
+ 	uart_send_string_it(buf);
+
+ 	uint8_t adc_buf[2];
+
 
   /* USER CODE END 2 */
 
@@ -152,6 +170,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if(tim16_it_flag)
+	  {
+		  tim16_it_flag = 0;
+		  adc_ch5_value = ADC_ReadChannel(5);
+//		  uart_send_byte_it(adc_ch5_value >> 8);
+//		  uart_send_byte_it(adc_ch5_value & 0x00FF);
+
+		  adc_buf[0] =(uint8_t)(adc_ch5_value >> 8);
+		  adc_buf[1] =(uint8_t)(adc_ch5_value & 0x00FF);
+		  uart_send_data_it(adc_buf, 2);
+		  //uart_send_byte_it('\n');
+	  }
 //	  snprintf(buf, sizeof(buf), "Hello UART1! \n");
 //	  uart_send_string_it(buf);
 	  //uart_send_byte_it(0x58);
@@ -237,7 +267,11 @@ void TIM1_UP_TIM16_IRQHandler(void)
 {
     if (TIM16->SR & TIM_SR_UIF) {
         TIM16->SR &= ~TIM_SR_UIF; // Сброс флага
+
+        tim16_it_flag = 1;
+
         GPIOA->ODR ^= GPIO_ODR_OD3;// Ваш код
+
     }
 }
 /* USER CODE END 4 */

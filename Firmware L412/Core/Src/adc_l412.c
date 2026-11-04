@@ -41,7 +41,19 @@ void configADC(void)
     ADC1->CR |= ADC_CR_ADEN;
 
     while(!(ADC1->ISR & ADC_ISR_ADRDY));
-
-
 }
+
+uint16_t ADC_ReadChannel(uint8_t channel)
+{
+    while(ADC1->CR & ADC_CR_ADSTART); 	// Остановить ADC если идёт преобразование
+    ADC1->SQR1 &= ~ADC_SQR1_SQ1; 		// Очистить SQ1
+
+    ADC1->SQR1 |= (channel << ADC_SQR1_SQ1_Pos); // Записать новый канал
+
+    ADC1->CR |= ADC_CR_ADSTART; // Старт
+
+    while(!(ADC1->ISR & ADC_ISR_EOC)); // Ждём завершения
+    return (uint16_t)ADC1->DR;
+}
+
 
