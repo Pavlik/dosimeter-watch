@@ -1,102 +1,25 @@
-# ==========================================
-# Altium Designer - generated files
-# ==========================================
+# Build output
+Debug/
+Release/
 
-# Generated output folders
-**/Project Outputs for *
-**/History/
-**/__Previews/
+# STM32CubeIDE generated temporary files
+*.o
+*.d
+*.su
+*.elf
+*.hex
+*.bin
+*.map
+*.list
 
-# Generated previews and project structure files
-*.SchDocPreview
-*.PcbDocPreview
-*.PrjPcbStructure
+# IDE local settings
+.settings/language.settings.xml
 
-# ==========================================
-# Manufacturing / CAM outputs
-# ==========================================
+# User-specific Eclipse settings
+.metadata/
 
-*.cam
-*.camtastic
-*.gbr
-*.ger
-*.gerber
-*.gko
-*.gml
-*.gts
-*.gbs
-*.gtl
-*.gbl
-*.gto
-*.gbo
-*.gm1
-*.drl
-*.drr
-*.rou
-*.rte
-*.ipc
-*.rep
-*.apr
-*.art
-*.pho
-*.nc
-*.tap
-
-# ==========================================
-# Exported documents
-# ==========================================
-
-# PDF exports
-*.pdf
-
-# Excel exports / BOM files
-*.xls
-*.xlsx
-*.xlsm
-*.xlsb
-
-# CSV exports
-*.csv
-
-# ==========================================
-# Archives
-# ==========================================
-
-*.zip
-*.7z
-*.rar
-*.tar
-*.gz
-*.bz2
-
-# ==========================================
-# Temporary files and backups
-# ==========================================
-
-*.$$$
-*.bak
-*.tmp
-*.temp
-*.old
-*.orig
-*.swp
-*.swo
-*~
-
-# ==========================================
-# Operating system / editor files
-# ==========================================
-
-# Windows
-Thumbs.db
-Desktop.ini
-ehthumbs.db
-
-# macOS
+# OS files
 .DS_Store
-.AppleDouble
-.LSOverride
+Thumbs.db
 
-# Editors
-.vscode/
-.idea/
+~$*
