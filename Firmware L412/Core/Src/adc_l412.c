@@ -56,30 +56,35 @@ void configADC(void)
     while(!(ADC1->ISR & ADC_ISR_ADRDY));
 }
 
-//void ADC_Start(void)
-//{
-//	ADC1->ISR = ADC_ISR_EOC |
-//	            ADC_ISR_EOS |
-//	            ADC_ISR_OVR;
-//	 ADC1->CR |= ADC_CR_ADSTART; // Старт
-//}
-//
-//bool ADC_IsReady(void);
-//uint16_t ADC_GetValue(void);
-
-uint16_t ADC_ReadChannel(uint8_t channel)
+void ADC_Start(void)
 {
-    while(ADC1->CR & ADC_CR_ADSTART); 	// Остановить ADC если идёт преобразование
-    ADC1->SQR1 &= ~ADC_SQR1_SQ1; 		// Очистить SQ1
+    ADC1->ISR |= ADC_ISR_EOC; // end of conversion flag
+    ADC1->ISR |= ADC_ISR_EOS; // end of sequence flag
+    ADC1->ISR |= ADC_ISR_OVR; // ADC overrun flag 0 - no overrum occurs/ 1 - overrun has occurred
 
-    ADC1->SQR1 |= (channel << ADC_SQR1_SQ1_Pos); // Записать новый канал
+    ADC1->CR |= ADC_CR_ADSTART;
+}
 
-    ADC1->CR |= ADC_CR_ADSTART; // Старт
+bool ADC_IsConversionComplete(void)
+{
+    return (ADC1->ISR & ADC_ISR_EOC);
+}
 
-    while(!(ADC1->ISR & ADC_ISR_EOC)); // Ждём завершения
+uint16_t ADC_GetValue(void)
+{
     return (uint16_t)ADC1->DR;
 }
 
+uint16_t ADC_ReadChannel(uint8_t channel) // blocking method of reading channel
+{
+    ADC_SelectChannel(channel);
+
+    ADC_Start();
+
+    while(!ADC_IsConversionComplete());
+
+    return ADC_GetValue();
+}
 
 
 

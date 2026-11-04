@@ -10,6 +10,7 @@
 
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx.h"
+#include "stdbool.h"
 
 
 typedef enum
@@ -26,6 +27,8 @@ typedef enum
 
 void ADC_SetSampleTime(uint8_t channel, uint8_t sample_time);
 void ADC_SelectChannel(uint8_t channel);
+bool ADC_IsConversionComplete(void);
+uint16_t ADC_GetValue(void);
 
 
 void configADC(void);
