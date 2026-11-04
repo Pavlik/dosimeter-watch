@@ -27,6 +27,14 @@ bool uart_send_byte_it(uint8_t byte)
     return true;
 }
 
+void uart_send_data_it(uint8_t *data, uint16_t len)
+{
+    while(len--)
+    {
+        uart_send_byte_it(*data++);
+    }
+}
+
 
 void uart_send_string_it(const char *str)
 {

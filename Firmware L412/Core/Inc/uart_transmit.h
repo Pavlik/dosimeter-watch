@@ -19,6 +19,8 @@
 void uart_send_init(void);
 bool uart_send_byte_it(uint8_t byte);
 void uart_send_string_it(const char *str);
+void uart_send_data_it(uint8_t *data, uint16_t len);
+
 
 
 #endif /* INC_UART_TRANSMIT_H_ */
