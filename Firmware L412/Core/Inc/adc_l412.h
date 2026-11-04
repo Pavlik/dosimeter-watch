@@ -48,6 +48,9 @@ typedef enum
 
 void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time);
 void ADC_SelectChannel(uint8_t channel);
+void ADC_SetSequenceLength(uint8_t len);
+void ADC_SetSequenceChannel(uint8_t rank, uint8_t channel);
+
 void ADC_Start(void);
 void ADC_Stop(void);
 bool ADC_IsConversionComplete(void);

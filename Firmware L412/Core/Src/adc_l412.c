@@ -35,6 +35,38 @@ void ADC_SelectChannel(uint8_t channel)
     ADC1->SQR1 |= (0UL << ADC_SQR1_L_Pos) | (channel << ADC_SQR1_SQ1_Pos);
 }
 
+void ADC_SetSequenceLength(uint8_t len)
+{
+    ADC1->SQR1 &= ~ADC_SQR1_L;
+    ADC1->SQR1 |= ((len - 1U) << ADC_SQR1_L_Pos);
+}
+
+void ADC_SetSequenceChannel(uint8_t rank, uint8_t channel)
+{
+    switch(rank)
+    {
+        case 1:
+            ADC1->SQR1 &= ~ADC_SQR1_SQ1;
+            ADC1->SQR1 |= ((uint32_t)channel << ADC_SQR1_SQ1_Pos);
+            break;
+
+        case 2:
+            ADC1->SQR1 &= ~ADC_SQR1_SQ2;
+            ADC1->SQR1 |= ((uint32_t)channel << ADC_SQR1_SQ2_Pos);
+            break;
+
+        case 3:
+            ADC1->SQR1 &= ~ADC_SQR1_SQ3;
+            ADC1->SQR1 |= ((uint32_t)channel << ADC_SQR1_SQ3_Pos);
+            break;
+
+        case 4:
+            ADC1->SQR1 &= ~ADC_SQR1_SQ4;
+            ADC1->SQR1 |= ((uint32_t)channel << ADC_SQR1_SQ4_Pos);
+            break;
+    }
+}
+
 void ADC_Init(void)
 {
 
