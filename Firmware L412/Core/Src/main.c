@@ -109,7 +109,7 @@ int main(void)
  	TIM16->CNT = 0;
 
  	TIM16->DIER |= TIM_DIER_UIE;
- 	NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 1);
+ 	NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 0);
  	NVIC_EnableIRQ(TIM1_UP_TIM16_IRQn);
 
  	TIM16->CR1 |= TIM_CR1_CEN;
@@ -152,8 +152,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //snprintf(buf, sizeof(buf), "Hello UART1! \n");
-	  //uart_send_string_it(buf);
+//	  snprintf(buf, sizeof(buf), "Hello UART1! \n");
+//	  uart_send_string_it(buf);
+	  //uart_send_byte_it(0x58);
+	  //uart_send_byte_it('\n');
+
 	  //GPIOA->ODR ^= GPIO_ODR_OD3;
 	  //HAL_Delay(500);
     /* USER CODE END WHILE */

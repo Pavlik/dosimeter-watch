@@ -15,7 +15,7 @@ void uart_send_init(void)
 	uart_tx.head = 0;
 	uart_tx.tail = 0;
 
-    NVIC_SetPriority(USART1_IRQn, 0);
+    NVIC_SetPriority(USART1_IRQn, 1);
     NVIC_EnableIRQ(USART1_IRQn);
 }
 
