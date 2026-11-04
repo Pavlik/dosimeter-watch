@@ -58,6 +58,8 @@ void ADC_DMA_Config_non_circular_mode()
 
 	ADC1_DMA_Disable();
 
+	DMA1_Channel1->CCR = 0;
+
 	DMA1_Channel1->CPAR = (uint32_t)&ADC1->DR; // data source
 	DMA1_Channel1->CMAR = (uint32_t)&adc_buffer; // memory address
 
@@ -73,7 +75,21 @@ void ADC_DMA_Config_non_circular_mode()
 	DMA1_Channel1->CCR &= ~DMA_CCR_DIR; // dirrection is from Peripheral to Memory
 
 	ADC1_DMA_Enable();
+}
 
+uint16_t ADC_Read_DMA(void)
+{
+    ADC1_DMA_Disable();
+
+    DMA1_Channel1->CNDTR = 1;
+
+    ADC1_DMA_Enable();
+
+    ADC_Start();
+
+    while(DMA1_Channel1->CNDTR);
+
+    return adc_buffer;
 }
 
 void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
@@ -172,11 +188,6 @@ bool ADC_IsConversionComplete(void)
 uint16_t ADC_GetValue(void)
 {
     return (uint16_t)ADC1->DR;
-}
-
-uint16_t ADC_Get_DMA_Value(void)
-{
-    return adc_buffer;
 }
 
 
