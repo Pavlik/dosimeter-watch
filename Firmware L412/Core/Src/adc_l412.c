@@ -31,7 +31,7 @@ void configADC(void)
 	ADC1->CR |= ADC_CR_ADCAL;
 	while (ADC1->CR & ADC_CR_ADCAL);
 
-	ADC1->SMPR1 |= 3UL << ADC_SMPR1_SMP0_Pos;
+	ADC1->SMPR1 |= 3UL << ADC_SMPR1_SMP5_Pos;
 
 	ADC1->CFGR = 0;
 

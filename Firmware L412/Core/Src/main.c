@@ -180,6 +180,8 @@ int main(void)
 		  adc_buf[0] =(uint8_t)(adc_ch5_value >> 8);
 		  adc_buf[1] =(uint8_t)(adc_ch5_value & 0x00FF);
 		  uart_send_data_it(adc_buf, 2);
+		 	snprintf(buf, sizeof(buf),  "ADC = %d\r\n", adc_ch5_value);
+		 	uart_send_string_it(buf);
 		  //uart_send_byte_it('\n');
 	  }
 //	  snprintf(buf, sizeof(buf), "Hello UART1! \n");
