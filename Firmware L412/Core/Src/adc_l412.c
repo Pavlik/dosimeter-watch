@@ -7,6 +7,8 @@
 
 #include "adc_l412.h"
 
+volatile uint16_t adc_buffer;
+
 void ADC_Init(void)
 {
 
@@ -35,6 +37,43 @@ void ADC_Init(void)
     ADC1->CR |= ADC_CR_ADEN;
 
     while(!(ADC1->ISR & ADC_ISR_ADRDY));
+}
+
+void ADC1_DMA_Enable()
+{
+	DMA1_Channel1->CCR |= DMA_CCR_EN; // Start DMA
+}
+
+void ADC1_DMA_Disable()
+{
+	DMA1_Channel1->CCR &= ~DMA_CCR_EN; // Stop DMA
+}
+
+void ADC_DMA_Config_non_circular_mode()
+{
+	ADC1->CFGR |= ADC_CFGR_DMAEN; // enable adc dma
+	// ADC1->CFGR |= ADC_CFGR_DMACFG; // adc dma circular mode ?
+
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN; // enable DMA clock
+
+	ADC1_DMA_Disable();
+
+	DMA1_Channel1->CPAR = (uint32_t)&ADC1->DR; // data source
+	DMA1_Channel1->CMAR = (uint32_t)&adc_buffer; // memory address
+
+	/*Because of adc is 12 bits wee need uint16_t data / Half Word for both sides*/
+	DMA1_Channel1->CCR |= DMA_CCR_PSIZE_0; // Peripheral - Half Word
+	DMA1_Channel1->CCR |= DMA_CCR_MSIZE_0; // Memory     - Half Word
+
+	DMA1_Channel1->CNDTR = ADC_DMA_AMOUNT_TRANSFER; // amount of transfer elements
+
+	DMA1_Channel1->CCR &= ~DMA_CCR_PINC; // disable increment of Peripheral
+	DMA1_Channel1->CCR &= ~DMA_CCR_MINC;  // disable memory increment
+
+	DMA1_Channel1->CCR &= ~DMA_CCR_DIR; // dirrection is from Peripheral to Memory
+
+	ADC1_DMA_Enable();
+
 }
 
 void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
@@ -133,6 +172,11 @@ bool ADC_IsConversionComplete(void)
 uint16_t ADC_GetValue(void)
 {
     return (uint16_t)ADC1->DR;
+}
+
+uint16_t ADC_Get_DMA_Value(void)
+{
+    return adc_buffer;
 }
 
 

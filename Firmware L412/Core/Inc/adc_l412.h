@@ -12,6 +12,8 @@
 #include "stm32l4xx.h"
 #include "stdbool.h"
 
+#define ADC_DMA_AMOUNT_TRANSFER 1
+
 typedef enum
 {
     ADC_CH0 = 0,
@@ -57,8 +59,12 @@ bool ADC_IsConversionComplete(void);
 uint16_t ADC_GetValue(void);
 bool ADC_IsBusy(void);
 
-
 void ADC_Init(void);
+
+void ADC1_DMA_Enable();
+void ADC1_DMA_Disable();
+void ADC_DMA_Config_non_circular_mode();
+uint16_t ADC_Get_DMA_Value(void);
 
 
 uint16_t ADC_ReadChannel(uint8_t channel);

@@ -142,6 +142,7 @@ int main(void)
 
 
  	ADC_Init();
+ 	ADC_DMA_Config_non_circular_mode();
  	uart_send_init();
 
 
@@ -150,6 +151,11 @@ int main(void)
 
  	char buf[32] = {0,};
  	uint16_t adc_ch5_value = 0;
+
+	ADC_SetSequenceLength(1);
+	ADC_SetSequenceChannel(1, ADC_CH5);
+
+    ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_640_5CYCLES);
 
  	HAL_Delay(1000);
  	snprintf(buf, sizeof(buf),  "CR   = %08lX\r\n", ADC1->CR);
@@ -160,6 +166,8 @@ int main(void)
  	uart_send_string_it(buf);
  	snprintf(buf, sizeof(buf),  "SQR1 = %08lX\r\n", ADC1->SQR1);
  	uart_send_string_it(buf);
+
+
 
  	uint8_t adc_buf[2];
 
@@ -173,32 +181,27 @@ int main(void)
 
 	  if(tim16_it_flag)
 	  {
-		  static uint8_t adc_busy = 0;
-		  if (!adc_busy)
-		  {
-		      //ADC_SelectChannel(ADC_CH5);
-			  ADC_SetSequenceLength(1);
-			  ADC_SetSequenceChannel(1, ADC_CH5);
 
-		      ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_640_5CYCLES);
-		      if(!ADC_IsBusy())
-		    	  ADC_Start();
+		  ADC_Start();
+		  adc_ch5_value = ADC_Get_DMA_Value();
+		  tim16_it_flag = 0;
+//		  static uint8_t adc_busy = 0;
+//		  if (!adc_busy)
+//		  {
+//		      if(!ADC_IsBusy())
+//		    	  ADC_Start();
+//		      adc_busy = 1;
+//		  }
+//		  else
+//		  {
+//		      if (ADC_IsConversionComplete())
+//		      {
+//		    	  adc_ch5_value = ADC_GetValue();
+//		          adc_busy = 0;
+//				  tim16_it_flag = 0;
+//		      }
+//		  }
 
-		      adc_busy = 1;
-		  }
-		  else
-		  {
-		      if (ADC_IsConversionComplete())
-		      {
-		    	  adc_ch5_value = ADC_GetValue();
-
-		          adc_busy = 0;
-				  tim16_it_flag = 0;
-		      }
-		  }
-
-//		  uart_send_byte_it(adc_ch5_value >> 8);
-//		  uart_send_byte_it(adc_ch5_value & 0x00FF);
 
 		  adc_buf[0] =(uint8_t)(adc_ch5_value >> 8);
 		  adc_buf[1] =(uint8_t)(adc_ch5_value & 0x00FF);
