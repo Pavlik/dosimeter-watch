@@ -14,6 +14,8 @@ void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
 
 void ADC_SelectChannel(uint8_t channel)
 {
+	while (ADC1->CR & ADC_CR_ADSTART);
+
     ADC1->SQR1 &= ~ADC_SQR1_SQ1;
     ADC1->SQR1 |= (0UL << ADC_SQR1_L_Pos) | (channel << ADC_SQR1_SQ1_Pos);
 }
@@ -53,6 +55,17 @@ void configADC(void)
 
     while(!(ADC1->ISR & ADC_ISR_ADRDY));
 }
+
+//void ADC_Start(void)
+//{
+//	ADC1->ISR = ADC_ISR_EOC |
+//	            ADC_ISR_EOS |
+//	            ADC_ISR_OVR;
+//	 ADC1->CR |= ADC_CR_ADSTART; // Старт
+//}
+//
+//bool ADC_IsReady(void);
+//uint16_t ADC_GetValue(void);
 
 uint16_t ADC_ReadChannel(uint8_t channel)
 {
