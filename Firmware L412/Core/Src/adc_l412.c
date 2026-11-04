@@ -20,12 +20,10 @@ void ADC_SelectChannel(uint8_t channel)
     ADC1->SQR1 |= (0UL << ADC_SQR1_L_Pos) | (channel << ADC_SQR1_SQ1_Pos);
 }
 
-void configADC(void)
+void ADC_Init(void)
 {
-	if((RCC->AHB2ENR & RCC_AHB2ENR_GPIOAEN) != 1)
-	{
-		RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
-	}
+
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 
 	GPIOA->MODER &= ~GPIO_MODER_MODE0;
 	GPIOA->MODER |= 3UL << GPIO_MODER_MODE0_Pos; //PA0 as ADC1 CH5
@@ -44,11 +42,7 @@ void configADC(void)
 	ADC1->CR |= ADC_CR_ADCAL;
 	while (ADC1->CR & ADC_CR_ADCAL);
 
-	ADC_SetSampleTime(5, ADC_SAMPLE_640_5CYCLES);
-
 	ADC1->CFGR = 0;
-
-	ADC_SelectChannel(5);
 
     ADC1->ISR |= ADC_ISR_ADRDY;
     ADC1->CR |= ADC_CR_ADEN;
@@ -65,6 +59,27 @@ void ADC_Start(void)
     ADC1->CR |= ADC_CR_ADSTART;
 }
 
+void ADC_Stop(void)
+{
+    if (ADC1->CR & ADC_CR_ADSTART)
+    {
+        ADC1->CR |= ADC_CR_ADSTP;
+
+        while (ADC1->CR & ADC_CR_ADSTP);
+    }
+}
+
+bool ADC_WaitConversionComplete(uint32_t timeout)
+{
+    while (!(ADC1->ISR & ADC_ISR_EOC))
+    {
+        if (--timeout == 0)
+            return false;
+    }
+
+    return true;
+}
+
 bool ADC_IsConversionComplete(void)
 {
     return (ADC1->ISR & ADC_ISR_EOC);
@@ -75,16 +90,26 @@ uint16_t ADC_GetValue(void)
     return (uint16_t)ADC1->DR;
 }
 
+
+
 uint16_t ADC_ReadChannel(uint8_t channel) // blocking method of reading channel
 {
     ADC_SelectChannel(channel);
+    ADC_SetSampleTime(channel, ADC_SAMPLE_640_5CYCLES);
 
     ADC_Start();
 
-    while(!ADC_IsConversionComplete());
+    //while(!ADC_IsConversionComplete());
+    while(ADC_WaitConversionComplete(100000));
 
     return ADC_GetValue();
 }
+
+bool ADC_IsBusy(void)
+{
+    return (ADC1->CR & ADC_CR_ADSTART);
+}
+
 
 
 

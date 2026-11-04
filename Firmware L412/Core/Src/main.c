@@ -141,7 +141,7 @@ int main(void)
  	 USART1->CR1 |= USART_CR1_UE; // ENABLE UART1
 
 
- 	configADC();
+ 	ADC_Init();
  	uart_send_init();
 
 
@@ -170,10 +170,30 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
 	  if(tim16_it_flag)
 	  {
-		  tim16_it_flag = 0;
-		  adc_ch5_value = ADC_ReadChannel(5);
+		  static uint8_t adc_busy = 0;
+		  if (!adc_busy)
+		  {
+		      ADC_SelectChannel(5);
+		      ADC_SetSampleTime(5, ADC_SAMPLE_640_5CYCLES);
+		      if(!ADC_IsBusy())
+		    	  ADC_Start();
+
+		      adc_busy = 1;
+		  }
+		  else
+		  {
+		      if (ADC_IsConversionComplete())
+		      {
+		    	  adc_ch5_value = ADC_GetValue();
+
+		          adc_busy = 0;
+				  tim16_it_flag = 0;
+		      }
+		  }
+
 //		  uart_send_byte_it(adc_ch5_value >> 8);
 //		  uart_send_byte_it(adc_ch5_value & 0x00FF);
 
