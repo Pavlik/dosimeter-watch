@@ -178,7 +178,7 @@ int main(void)
 		  {
 		      //ADC_SelectChannel(ADC_CH5);
 			  ADC_SetSequenceLength(1);
-			  ADC_SetSequenceChannel(1,ADC_CH5);
+			  ADC_SetSequenceChannel(1, ADC_CH5);
 
 		      ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_640_5CYCLES);
 		      if(!ADC_IsBusy())

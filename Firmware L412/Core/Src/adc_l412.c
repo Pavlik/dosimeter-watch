@@ -7,66 +7,6 @@
 
 #include "adc_l412.h"
 
-void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
-{
-
-
-
-	if(channel <= 9)
-	{
-		uint32_t pos = channel * 3U;
-		ADC1->SMPR1 &= ~(0x7U << pos);
-		ADC1->SMPR1 |= ((uint32_t)sample_time << pos);
-	}
-	else if(channel > 9 )
-	{
-		uint32_t pos = (channel - 10U) * 3U;
-		ADC1->SMPR2 &= ~(0x7U << pos);
-		ADC1->SMPR2 |= sample_time << pos;
-	}
-
-}
-
-void ADC_SelectChannel(uint8_t channel)
-{
-	while (ADC1->CR & ADC_CR_ADSTART);
-
-    ADC1->SQR1 &= ~ADC_SQR1_SQ1;
-    ADC1->SQR1 |= (0UL << ADC_SQR1_L_Pos) | (channel << ADC_SQR1_SQ1_Pos);
-}
-
-void ADC_SetSequenceLength(uint8_t len)
-{
-    ADC1->SQR1 &= ~ADC_SQR1_L;
-    ADC1->SQR1 |= ((len - 1U) << ADC_SQR1_L_Pos);
-}
-
-void ADC_SetSequenceChannel(uint8_t rank, uint8_t channel)
-{
-    switch(rank)
-    {
-        case 1:
-            ADC1->SQR1 &= ~ADC_SQR1_SQ1;
-            ADC1->SQR1 |= ((uint32_t)channel << ADC_SQR1_SQ1_Pos);
-            break;
-
-        case 2:
-            ADC1->SQR1 &= ~ADC_SQR1_SQ2;
-            ADC1->SQR1 |= ((uint32_t)channel << ADC_SQR1_SQ2_Pos);
-            break;
-
-        case 3:
-            ADC1->SQR1 &= ~ADC_SQR1_SQ3;
-            ADC1->SQR1 |= ((uint32_t)channel << ADC_SQR1_SQ3_Pos);
-            break;
-
-        case 4:
-            ADC1->SQR1 &= ~ADC_SQR1_SQ4;
-            ADC1->SQR1 |= ((uint32_t)channel << ADC_SQR1_SQ4_Pos);
-            break;
-    }
-}
-
 void ADC_Init(void)
 {
 
@@ -96,6 +36,64 @@ void ADC_Init(void)
 
     while(!(ADC1->ISR & ADC_ISR_ADRDY));
 }
+
+void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
+{
+
+	if(channel <= 9)
+	{
+		uint32_t pos = channel * 3U;
+		ADC1->SMPR1 &= ~(0x7U << pos);
+		ADC1->SMPR1 |= ((uint32_t)sample_time << pos);
+	}
+	else if(channel > 9 )
+	{
+		uint32_t pos = (channel - 10U) * 3U;
+		ADC1->SMPR2 &= ~(0x7U << pos);
+		ADC1->SMPR2 |= sample_time << pos;
+	}
+
+}
+
+void ADC_SetSequenceLength(uint8_t len)
+{
+    if ((len < 1) || (len > 16))
+        return;
+    ADC1->SQR1 &= ~ADC_SQR1_L;
+    ADC1->SQR1 |= ((len - 1U) << ADC_SQR1_L_Pos);
+}
+
+void ADC_SetSequenceChannel(uint8_t rank, uint8_t channel)
+{
+    volatile uint32_t *sqr;
+    uint32_t pos;
+    if ((rank < 1) || (rank > 16))
+        return;
+    if (rank <= 4)
+    {
+        sqr = &ADC1->SQR1;
+        pos = 6U + ((rank - 1U) * 6U);
+    }
+    else if (rank <= 9)
+    {
+        sqr = &ADC1->SQR2;
+        pos = (rank - 5U) * 6U;
+    }
+    else if (rank <= 14)
+    {
+        sqr = &ADC1->SQR3;
+        pos = (rank - 10U) * 6U;
+    }
+    else
+    {
+        sqr = &ADC1->SQR4;
+        pos = (rank - 15U) * 6U;
+    }
+    *sqr &= ~(0x1FU << pos);
+    *sqr |= ((uint32_t)channel << pos);
+}
+
+
 
 void ADC_Start(void)
 {
@@ -136,7 +134,6 @@ uint16_t ADC_GetValue(void)
 {
     return (uint16_t)ADC1->DR;
 }
-
 
 
 uint16_t ADC_ReadChannel(uint8_t channel) // blocking method of reading channel
