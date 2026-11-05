@@ -64,8 +64,9 @@ void ADC_Init(void);
 void ADC1_DMA_Enable();
 void ADC1_DMA_Disable();
 void ADC_DMA_Config_non_circular_mode();
-uint16_t ADC_Read_DMA(void);
-
+uint16_t ADC_DMA_Read(void);
+void ADC_Start_DMA_Conversion(void);
+uint8_t ADC_DMA_IsReady();
 
 uint16_t ADC_ReadChannel(uint8_t channel);
 

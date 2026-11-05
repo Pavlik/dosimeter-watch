@@ -178,29 +178,28 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
 	  if(tim16_it_flag)
 	  {
-
-		  ADC_Start();
-		  while(DMA1_Channel1->CNDTR != 0);
-		  adc_ch5_value = ADC_Read_DMA();
+		  ADC_Start_DMA_Conversion();
+		  //ADC_Start();
+//		  while(DMA1_Channel1->CNDTR != 0);
+//		  adc_ch5_value = ADC_Read_DMA();
 		  tim16_it_flag = 0;
 
+
+
+
+	  }
+	  if(ADC_DMA_IsReady())
+	  {
+		  adc_ch5_value = ADC_DMA_Read();
 		  adc_buf[0] =(uint8_t)(adc_ch5_value >> 8);
 		  adc_buf[1] =(uint8_t)(adc_ch5_value & 0x00FF);
 		  uart_send_data_it(adc_buf, 2);
-		 	snprintf(buf, sizeof(buf),  "ADC = %d\r\n", adc_ch5_value);
-		 	uart_send_string_it(buf);
-		  //uart_send_byte_it('\n');
+		  snprintf(buf, sizeof(buf),  "ADC = %d\r\n", adc_ch5_value);
+		  uart_send_string_it(buf);
 	  }
-//	  snprintf(buf, sizeof(buf), "Hello UART1! \n");
-//	  uart_send_string_it(buf);
-	  //uart_send_byte_it(0x58);
-	  //uart_send_byte_it('\n');
 
-	  //GPIOA->ODR ^= GPIO_ODR_OD3;
-	  //HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

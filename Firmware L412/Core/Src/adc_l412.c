@@ -7,7 +7,8 @@
 
 #include "adc_l412.h"
 
-volatile uint16_t adc_buffer;
+static volatile uint16_t adc_buffer = 0;
+static volatile uint8_t adc_dma_ready = 0;
 
 void ADC_Init(void)
 {
@@ -74,22 +75,26 @@ void ADC_DMA_Config_non_circular_mode()
 
 	DMA1_Channel1->CCR &= ~DMA_CCR_DIR; // dirrection is from Peripheral to Memory
 
+	DMA1_Channel1->CCR |= DMA_CCR_TCIE; // enable interruption when transfer ends
+	NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+
 	ADC1_DMA_Enable();
 }
 
-uint16_t ADC_Read_DMA(void)
+uint16_t ADC_DMA_Read(void)
 {
-    ADC1_DMA_Disable();
+    return adc_buffer;
+}
 
-    DMA1_Channel1->CNDTR = 1;
+void ADC_Start_DMA_Conversion(void)
+{
+    DMA1_Channel1->CCR &= ~DMA_CCR_EN;
 
-    ADC1_DMA_Enable();
+    DMA1_Channel1->CNDTR = ADC_DMA_AMOUNT_TRANSFER;
+
+    DMA1_Channel1->CCR |= DMA_CCR_EN;
 
     ADC_Start();
-
-    while(DMA1_Channel1->CNDTR);
-
-    return adc_buffer;
 }
 
 void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
@@ -208,6 +213,29 @@ bool ADC_IsBusy(void)
 {
     return (ADC1->CR & ADC_CR_ADSTART);
 }
+
+uint8_t ADC_DMA_IsReady()
+{
+	uint8_t buf_adc_dma_ready = adc_dma_ready;
+	adc_dma_ready = 0;
+	return buf_adc_dma_ready;
+}
+
+
+void DMA1_Channel1_IRQHandler(void)
+{
+    if(DMA1->ISR & DMA_ISR_TCIF1)
+    {
+    	DMA1->IFCR =
+    	      DMA_IFCR_CGIF1
+    	    | DMA_IFCR_CTCIF1
+    	    | DMA_IFCR_CHTIF1
+    	    | DMA_IFCR_CTEIF1;
+
+        adc_dma_ready = 1;
+    }
+}
+
 
 
 
