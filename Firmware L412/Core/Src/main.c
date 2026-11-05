@@ -185,8 +185,8 @@ int main(void)
   {
 	  if(tim16_it_flag)
 	  {
-		  ADC_Start_DMA_Conversion();
-		  //ADC_Start();
+		  //ADC_Start_DMA_Conversion();
+		  ADC_Start();
 //		  while(DMA1_Channel1->CNDTR != 0);
 //		  adc_ch5_value = ADC_Read_DMA();
 		  tim16_it_flag = 0;
