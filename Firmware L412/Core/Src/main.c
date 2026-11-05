@@ -150,12 +150,17 @@ int main(void)
  	/*UART1 CONFIG END*/
 
  	char buf[32] = {0,};
- 	uint16_t adc_ch5_value = 0;
+ 	uint16_t* adc_value = ADC_DMA_Read_Sequence();
 
-	ADC_SetSequenceLength(1);
+	ADC_SetSequenceLength(ADC_DMA_AMOUNT_TRANSFER);
 	ADC_SetSequenceChannel(1, ADC_CH5);
+	ADC_SetSequenceChannel(2, ADC_CH6);
+	ADC_SetSequenceChannel(3, ADC_CH7);
 
     ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_640_5CYCLES);
+    ADC_SetSampleTime(ADC_CH6, ADC_SAMPLE_640_5CYCLES);
+    ADC_SetSampleTime(ADC_CH7, ADC_SAMPLE_640_5CYCLES);
+
 
  	HAL_Delay(1000);
  	snprintf(buf, sizeof(buf),  "CR   = %08lX\r\n", ADC1->CR);
@@ -192,11 +197,20 @@ int main(void)
 	  }
 	  if(ADC_DMA_IsReady())
 	  {
-		  adc_ch5_value = ADC_DMA_Read();
-		  adc_buf[0] =(uint8_t)(adc_ch5_value >> 8);
-		  adc_buf[1] =(uint8_t)(adc_ch5_value & 0x00FF);
-		  uart_send_data_it(adc_buf, 2);
-		  snprintf(buf, sizeof(buf),  "ADC = %d\r\n", adc_ch5_value);
+		  adc_value = ADC_DMA_Read_Sequence();
+//		  adc_buf[0] =(uint8_t)(adc_ch5_value >> 8);
+//		  adc_buf[1] =(uint8_t)(adc_ch5_value & 0x00FF);
+//		  uart_send_data_it(adc_buf, 2);
+		  snprintf(buf, sizeof(buf),  "CH5 = %u\r\n", adc_value[0]);
+		  uart_send_string_it(buf);
+
+		  snprintf(buf, sizeof(buf),  "CH6 = %u\r\n", adc_value[1]);
+		  uart_send_string_it(buf);
+
+		  snprintf(buf, sizeof(buf),  "CH7 = %u\r\n", adc_value[2]);
+		  uart_send_string_it(buf);
+
+		  snprintf(buf, sizeof(buf),  "---------------");
 		  uart_send_string_it(buf);
 	  }
 

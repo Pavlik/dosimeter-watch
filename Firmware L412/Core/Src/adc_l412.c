@@ -7,7 +7,9 @@
 
 #include "adc_l412.h"
 
-static volatile uint16_t adc_buffer = 0;
+static uint16_t adc_buffer_sequence[ADC_DMA_AMOUNT_TRANSFER];
+static uint16_t adc_buffer;
+
 static volatile uint8_t adc_dma_ready = 0;
 
 void ADC_Init(void)
@@ -17,6 +19,12 @@ void ADC_Init(void)
 
 	GPIOA->MODER &= ~GPIO_MODER_MODE0;
 	GPIOA->MODER |= 3UL << GPIO_MODER_MODE0_Pos; //PA0 as ADC1 CH5
+
+	GPIOA->MODER &= ~GPIO_MODER_MODE1;
+	GPIOA->MODER |= 3UL << GPIO_MODER_MODE1_Pos; //PA1 as ADC1 CH6
+
+	GPIOA->MODER &= ~GPIO_MODER_MODE2;
+	GPIOA->MODER |= 3UL << GPIO_MODER_MODE2_Pos; //PA2 as ADC1 CH7
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN; // ADC CLOCK ENABLE
 
@@ -62,7 +70,7 @@ void ADC_DMA_Config_non_circular_mode()
 	DMA1_Channel1->CCR = 0;
 
 	DMA1_Channel1->CPAR = (uint32_t)&ADC1->DR; // data source
-	DMA1_Channel1->CMAR = (uint32_t)&adc_buffer; // memory address
+	DMA1_Channel1->CMAR = (uint32_t)adc_buffer_sequence; // memory address !!!!& - only for one variable
 
 	/*Because of adc is 12 bits wee need uint16_t data / Half Word for both sides*/
 	DMA1_Channel1->CCR |= DMA_CCR_PSIZE_0; // Peripheral - Half Word
@@ -70,8 +78,14 @@ void ADC_DMA_Config_non_circular_mode()
 
 	DMA1_Channel1->CNDTR = ADC_DMA_AMOUNT_TRANSFER; // amount of transfer elements
 
+	/*in one shot mode both stay in non-incremental mode*/
+	/*in one circular mode peripheral stay in non-incremental mode and the memory become incremental*/
+
 	DMA1_Channel1->CCR &= ~DMA_CCR_PINC; // disable increment of Peripheral
-	DMA1_Channel1->CCR &= ~DMA_CCR_MINC;  // disable memory increment
+	DMA1_Channel1->CCR |= DMA_CCR_MINC;  // enable memory increment
+	//DMA1_Channel1->CCR &= ~DMA_CCR_MINC;  // disable memory increment
+
+
 
 	DMA1_Channel1->CCR &= ~DMA_CCR_DIR; // dirrection is from Peripheral to Memory
 
@@ -81,9 +95,17 @@ void ADC_DMA_Config_non_circular_mode()
 	ADC1_DMA_Enable();
 }
 
+
+
+
 uint16_t ADC_DMA_Read(void)
 {
     return adc_buffer;
+}
+
+uint16_t* ADC_DMA_Read_Sequence()
+{
+	return adc_buffer_sequence;
 }
 
 void ADC_Start_DMA_Conversion(void)
