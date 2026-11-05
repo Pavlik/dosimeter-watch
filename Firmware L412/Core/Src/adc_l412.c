@@ -58,7 +58,7 @@ void ADC1_DMA_Disable()
 	DMA1_Channel1->CCR &= ~DMA_CCR_EN; // Stop DMA
 }
 
-void ADC_DMA_Config_non_circular_mode()
+void ADC_DMA_Config(DMA_Mode mode)
 {
 	ADC1->CFGR |= ADC_CFGR_DMAEN; // enable adc dma
 	// ADC1->CFGR |= ADC_CFGR_DMACFG; // adc dma circular mode ?
@@ -68,6 +68,15 @@ void ADC_DMA_Config_non_circular_mode()
 	ADC1_DMA_Disable();
 
 	DMA1_Channel1->CCR = 0;
+
+	/* Enable circular mode*/
+	if(mode == CIRCULAR_MODE)
+		DMA1_Channel1->CCR |= DMA_CCR_CIRC;
+	else
+	{
+		DMA1_Channel1->CCR &= ~DMA_CCR_CIRC;
+	}
+
 
 	DMA1_Channel1->CPAR = (uint32_t)&ADC1->DR; // data source
 	DMA1_Channel1->CMAR = (uint32_t)adc_buffer_sequence; // memory address !!!!& - only for one variable
@@ -79,11 +88,13 @@ void ADC_DMA_Config_non_circular_mode()
 	DMA1_Channel1->CNDTR = ADC_DMA_AMOUNT_TRANSFER; // amount of transfer elements
 
 	/*in one shot mode both stay in non-incremental mode*/
-	/*in one circular mode peripheral stay in non-incremental mode and the memory become incremental*/
+	/*in  circular mode peripheral stay in non-incremental mode and the memory become incremental*/
 
 	DMA1_Channel1->CCR &= ~DMA_CCR_PINC; // disable increment of Peripheral
-	DMA1_Channel1->CCR |= DMA_CCR_MINC;  // enable memory increment
-	//DMA1_Channel1->CCR &= ~DMA_CCR_MINC;  // disable memory increment
+	if(ADC_DMA_AMOUNT_TRANSFER > 1)
+		DMA1_Channel1->CCR |= DMA_CCR_MINC;  // enable memory increment3
+	else
+		DMA1_Channel1->CCR &= ~DMA_CCR_MINC;  // disable memory increment
 
 
 

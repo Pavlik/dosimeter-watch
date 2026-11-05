@@ -142,7 +142,7 @@ int main(void)
 
 
  	ADC_Init();
- 	ADC_DMA_Config_non_circular_mode();
+ 	ADC_DMA_Config(CIRCULAR_MODE);
  	uart_send_init();
 
 
