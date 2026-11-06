@@ -12,8 +12,10 @@
 #include "stm32l4xx.h"
 #include "stdbool.h"
 
-#define ADC_DMA_AMOUNT_TRANSFER 2
+#define ADC_DMA_AMOUNT_TRANSFER 3
 #define VREFINT_CAL_ADDR ((uint16_t*)0x1FFF75AA)
+#define TEMP30_CAL_ADDR ((uint16_t*)0x1FFF75A8)
+#define TEMP130_CAL_ADDR ((uint16_t*)0x1FFF75CA)
 
 typedef enum
 {
@@ -33,7 +35,8 @@ typedef enum
     ADC_CH13,
     ADC_CH14,
     ADC_CH15,
-    ADC_CH16
+    ADC_CH16,
+	ADC_CH17
 } Adc_Channel;
 
 typedef enum
@@ -54,7 +57,7 @@ typedef enum
 	ADC_SAMPLE_640_5CYCLES
 }Adc_Sample_cycles;
 
-uint16_t getVrefint();
+
 void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time);
 void ADC_SelectChannel(uint8_t channel);
 void ADC_SetSequenceLength(uint8_t len);
@@ -77,6 +80,8 @@ void ADC_Start_DMA_Conversion(void);
 uint8_t ADC_DMA_IsReady();
 
 uint16_t ADC_ReadChannel(uint8_t channel);
+
+uint16_t getVrefint_call();
 
 
 

@@ -13,12 +13,6 @@ static uint16_t Vrefint;
 
 static volatile uint8_t adc_dma_ready = 0;
 
-uint16_t getVrefint()
-{
-	Vrefint = *VREFINT_CAL_ADDR;
-	return Vrefint;
-}
-
 void ADC_Init(void)
 {
 
@@ -59,6 +53,9 @@ void ADC_Init(void)
 
 	/*ENABLE VREFINT INTERNAL CHANNEL*/
 	ADC12_COMMON->CCR |= ADC_CCR_VREFEN;
+
+	/*ENABLE TEMPERATURE CH17 INTERNAL CHANNEL*/
+	ADC12_COMMON->CCR |= ADC_CCR_TSEN;
 
     ADC1->ISR |= ADC_ISR_ADRDY;
     ADC1->CR |= ADC_CR_ADEN;
@@ -273,6 +270,13 @@ uint8_t ADC_DMA_IsReady()
 	adc_dma_ready = 0;
 	return buf_adc_dma_ready;
 }
+
+uint16_t getVrefint_call()
+{
+	Vrefint = *VREFINT_CAL_ADDR;
+	return Vrefint;
+}
+
 
 
 void DMA1_Channel1_IRQHandler(void)

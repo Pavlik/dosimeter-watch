@@ -173,14 +173,20 @@ int main(void)
 	ADC_SetSequenceLength(ADC_DMA_AMOUNT_TRANSFER);
 	ADC_SetSequenceChannel(1, ADC_CH5);
 	ADC_SetSequenceChannel(2, ADC_CH0);
+	ADC_SetSequenceChannel(3, ADC_CH17);
 //	ADC_SetSequenceChannel(2, ADC_CH6);
 //	ADC_SetSequenceChannel(3, ADC_CH7);
 
     ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_12_5CYCLES);
     ADC_SetSampleTime(ADC_CH0, ADC_SAMPLE_640_5CYCLES);
+    ADC_SetSampleTime(ADC_CH17, ADC_SAMPLE_640_5CYCLES);
 //    ADC_SetSampleTime(ADC_CH6, ADC_SAMPLE_640_5CYCLES);
 //    ADC_SetSampleTime(ADC_CH7, ADC_SAMPLE_640_5CYCLES);
 
+
+
+    uint16_t true_VDDA;
+    int32_t true_temp;
 
  	HAL_Delay(1000);
  	snprintf(buf, sizeof(buf), "TIM15->CR2 = %08lX\r\n",TIM15->CR2);
@@ -191,11 +197,6 @@ int main(void)
  	uart_send_string_it(buf);
  	snprintf(buf, sizeof(buf), "ADC1->ISR = %08lX\r\n", ADC1->ISR);
  	uart_send_string_it(buf);
-
-
-
- 	uint8_t adc_buf[2];
-
 
   /* USER CODE END 2 */
 
@@ -209,6 +210,17 @@ int main(void)
 		  //ADC_Start();
 //		  while(DMA1_Channel1->CNDTR != 0);
 //		  adc_ch5_value = ADC_Read_DMA();
+
+
+		  true_VDDA = 3000 *(*VREFINT_CAL_ADDR) / adc_value[1];
+		  int32_t correctd_temp_raw = ((int32_t)adc_value[2]* (*VREFINT_CAL_ADDR)/adc_value[1]);
+		  //true_temp = (100/(int32_t)((*TEMP130_CAL_ADDR) - (*TEMP30_CAL_ADDR))) * (correctd_temp_raw - (*TEMP30_CAL_ADDR)) + 30;
+
+		  true_temp =
+				  3000 +
+				  ((int32_t)(correctd_temp_raw - (*TEMP30_CAL_ADDR)) * 10000)/
+				  ((*TEMP130_CAL_ADDR) - (*TEMP30_CAL_ADDR));
+
 		  tim16_it_flag = 0;
 	  }
 	  if(ADC_DMA_IsReady())
@@ -216,10 +228,16 @@ int main(void)
 		  adc_value = ADC_DMA_Read_Sequence();
 		  snprintf(buf, sizeof(buf),  "CH5 = %u\r\n", adc_value[0]);
 		  uart_send_string_it(buf);
-		  snprintf(buf, sizeof(buf),  "VREFINT = %u\r\n", adc_value[1]);
+		  snprintf(buf, sizeof(buf),  "VREFINT = %u\r\n", true_VDDA);
 		  uart_send_string_it(buf);
-		  snprintf(buf, sizeof(buf),  "VREFINT CALL = %u\r\n", getVrefint());
-		  		  uart_send_string_it(buf);
+		  snprintf(buf, sizeof(buf),  "TEMP  = %ld\r\n", true_temp);
+		  uart_send_string_it(buf);
+
+		  snprintf(buf, sizeof(buf),  "VREFINT_CAL  = %u\r\n", (*VREFINT_CAL_ADDR));
+		  uart_send_string_it(buf);
+		  snprintf(buf, sizeof(buf),  "VREFINT adc  = %u\r\n", adc_value[1]);
+		  uart_send_string_it(buf);
+
 //
 //		  snprintf(buf, sizeof(buf),  "CH6 = %u\r\n", adc_value[1]);
 //		  uart_send_string_it(buf);
