@@ -42,10 +42,20 @@ void ADC_Init(void)
 
 	ADC1->CFGR = 0;
 
+	/*TRGO config START*/
+
+	ADC1->CFGR &= ~ADC_CFGR_EXTSEL;
+	ADC1->CFGR |= (14 << ADC_CFGR_EXTSEL_Pos); // source of adc_atart
+	ADC1->CFGR |= ADC_CFGR_EXTEN_0;  // ENABLE START FROM RISING EDGE
+
+	/*TRGO config END*/
+
     ADC1->ISR |= ADC_ISR_ADRDY;
     ADC1->CR |= ADC_CR_ADEN;
 
     while(!(ADC1->ISR & ADC_ISR_ADRDY));
+
+    ADC1->CR |= ADC_CR_ADSTART;
 }
 
 void ADC1_DMA_Enable()
@@ -61,7 +71,7 @@ void ADC1_DMA_Disable()
 void ADC_DMA_Config(DMA_Mode mode)
 {
 	ADC1->CFGR |= ADC_CFGR_DMAEN; // enable adc dma
-	// ADC1->CFGR |= ADC_CFGR_DMACFG; // adc dma circular mode ?
+	ADC1->CFGR |= ADC_CFGR_DMACFG; // adc dma circular mode ?
 
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN; // enable DMA clock
 

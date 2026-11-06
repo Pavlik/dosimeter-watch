@@ -116,6 +116,24 @@ int main(void)
 
  	/*TIM16 CONFIG END*/
 
+ 	/*TIM15 CONFIG START*/
+
+ 	RCC->APB2ENR |= RCC_APB2ENR_TIM15EN;
+
+ 	TIM15->PSC = 24000-1;
+ 	TIM15->ARR = 1000-1;
+ 	TIM15->CNT = 0;
+
+ 	TIM15->EGR |= TIM_EGR_UG;
+
+ 	TIM15->CR2 &= ~TIM_CR2_MMS;
+ 	TIM15->CR2 |= TIM_CR2_MMS_1; // TRGO = Update Evint
+
+
+ 	TIM15->CR1 |= TIM_CR1_CEN;
+
+ 	/*TIM15 CONFIG END*/
+
  	/*GPIO UART RX/TX PA9-PA10 CONFIG START*/
 
  	 GPIOA->MODER &= ~GPIO_MODER_MODE10;
@@ -163,13 +181,13 @@ int main(void)
 
 
  	HAL_Delay(1000);
- 	snprintf(buf, sizeof(buf),  "CR   = %08lX\r\n", ADC1->CR);
+ 	snprintf(buf, sizeof(buf), "TIM15->CR2 = %08lX\r\n",TIM15->CR2);
  	uart_send_string_it(buf);
- 	snprintf(buf, sizeof(buf),  "ISR  = %08lX\r\n", ADC1->ISR);
+ 	snprintf(buf, sizeof(buf), "TIM15->SR = %08lX\r\n",TIM15->SR);
  	uart_send_string_it(buf);
- 	snprintf(buf, sizeof(buf),  "CFGR = %08lX\r\n", ADC1->CFGR);
+ 	snprintf(buf, sizeof(buf), "ADC1->CFGR = %08lX\r\n", ADC1->CFGR);
  	uart_send_string_it(buf);
- 	snprintf(buf, sizeof(buf),  "SQR1 = %08lX\r\n", ADC1->SQR1);
+ 	snprintf(buf, sizeof(buf), "ADC1->ISR = %08lX\r\n", ADC1->ISR);
  	uart_send_string_it(buf);
 
 
@@ -186,14 +204,10 @@ int main(void)
 	  if(tim16_it_flag)
 	  {
 		  //ADC_Start_DMA_Conversion();
-		  ADC_Start();
+		  //ADC_Start();
 //		  while(DMA1_Channel1->CNDTR != 0);
 //		  adc_ch5_value = ADC_Read_DMA();
 		  tim16_it_flag = 0;
-
-
-
-
 	  }
 	  if(ADC_DMA_IsReady())
 	  {
