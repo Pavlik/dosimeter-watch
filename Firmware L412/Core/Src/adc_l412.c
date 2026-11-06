@@ -9,8 +9,15 @@
 
 static uint16_t adc_buffer_sequence[ADC_DMA_AMOUNT_TRANSFER];
 static uint16_t adc_buffer;
+static uint16_t Vrefint;
 
 static volatile uint8_t adc_dma_ready = 0;
+
+uint16_t getVrefint()
+{
+	Vrefint = *VREFINT_CAL_ADDR;
+	return Vrefint;
+}
 
 void ADC_Init(void)
 {
@@ -49,6 +56,9 @@ void ADC_Init(void)
 	ADC1->CFGR |= ADC_CFGR_EXTEN_0;  // ENABLE START FROM RISING EDGE
 
 	/*TRGO config END*/
+
+	/*ENABLE VREFINT INTERNAL CHANNEL*/
+	ADC12_COMMON->CCR |= ADC_CCR_VREFEN;
 
     ADC1->ISR |= ADC_ISR_ADRDY;
     ADC1->CR |= ADC_CR_ADEN;
