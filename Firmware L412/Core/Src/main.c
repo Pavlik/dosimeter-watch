@@ -101,6 +101,19 @@ int main(void)
 
  	/*GPIO SYSTEM LED CONFIG END*/
 
+ 	/*GPIO AS ADC CHANNELS CONFIG START*/
+
+	GPIOA->MODER &= ~GPIO_MODER_MODE0;
+	GPIOA->MODER |= 3UL << GPIO_MODER_MODE0_Pos; //PA0 as ADC1 CH5
+
+	GPIOA->MODER &= ~GPIO_MODER_MODE1;
+	GPIOA->MODER |= 3UL << GPIO_MODER_MODE1_Pos; //PA1 as ADC1 CH6
+
+	GPIOA->MODER &= ~GPIO_MODER_MODE2;
+	GPIOA->MODER |= 3UL << GPIO_MODER_MODE2_Pos; //PA2 as ADC1 CH7
+
+ 	/*GPIO AS ADC CHANNELS CONFIG END*/
+
  	/*TIM16 CONFIG START*/
 
  	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
@@ -207,16 +220,16 @@ int main(void)
   {
 	  if(tim16_it_flag)
 	  {
-		  adc_value = ADC_DMA_Read_Sequence();
 
-		  true_VDDA = ADC_CalcVDDA(adc_value[1]);
-		  true_temp = ADC_CalcTemperature_x100(adc_value[2], adc_value[1]);
 
 		  tim16_it_flag = 0;
 	  }
 	  if(ADC_DMA_IsReady())
 	  {
 		  adc_value = ADC_DMA_Read_Sequence();
+		  true_VDDA = ADC_CalcVDDA(adc_value[1]);
+		  true_temp = ADC_CalcTemperature_x100(adc_value[2], adc_value[1]);
+
 		  snprintf(buf, sizeof(buf),  "CH5 = %u\r\n", adc_value[0]);
 		  uart_send_string_it(buf);
 		  snprintf(buf, sizeof(buf),  "VREFINT = %u\r\n", true_VDDA);
