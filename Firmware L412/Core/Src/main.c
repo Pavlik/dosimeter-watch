@@ -21,9 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "uart_transmit.h"
-#include "adc_l412.h"
-#include "adc_measurment.h"
+#include "test.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,7 +42,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-volatile uint8_t tim16_it_flag = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -173,50 +171,8 @@ int main(void)
  	 USART1->CR1 |= USART_CR1_UE; // ENABLE UART1
 
 
- 	ADC_Init(ADC_MODE_DMA_CIRCULAR);
- 	ADC_EnableVrefInt();
- 	ADC_EnableTempSensor();
- 	ADC_SetTrigger(ADC_TRIGGER_TIM15_TRGO);
- 	ADC_Enable();
- 	ADC_Start();
-
- 	ADC_DMA_Config(CIRCULAR_MODE);
  	uart_send_init();
-
-
-
- 	/*UART1 CONFIG END*/
-
- 	char buf[32] = {0,};
- 	uint16_t* adc_value = ADC_DMA_Read_Sequence();
-
-	ADC_SetSequenceLength(ADC_DMA_AMOUNT_TRANSFER);
-	ADC_SetSequenceChannel(1, ADC_CH5);
-	ADC_SetSequenceChannel(2, ADC_CH0);
-	ADC_SetSequenceChannel(3, ADC_CH17);
-//	ADC_SetSequenceChannel(2, ADC_CH6);
-//	ADC_SetSequenceChannel(3, ADC_CH7);
-
-    ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_12_5CYCLES);
-    ADC_SetSampleTime(ADC_CH0, ADC_SAMPLE_640_5CYCLES);
-    ADC_SetSampleTime(ADC_CH17, ADC_SAMPLE_640_5CYCLES);
-//    ADC_SetSampleTime(ADC_CH6, ADC_SAMPLE_640_5CYCLES);
-//    ADC_SetSampleTime(ADC_CH7, ADC_SAMPLE_640_5CYCLES);
-
-
-
-    uint16_t true_VDDA;
-    int32_t true_temp;
-
- 	HAL_Delay(1000);
- 	snprintf(buf, sizeof(buf), "TIM15->CR2 = %08lX\r\n",TIM15->CR2);
- 	uart_send_string_it(buf);
- 	snprintf(buf, sizeof(buf), "TIM15->SR = %08lX\r\n",TIM15->SR);
- 	uart_send_string_it(buf);
- 	snprintf(buf, sizeof(buf), "ADC1->CFGR = %08lX\r\n", ADC1->CFGR);
- 	uart_send_string_it(buf);
- 	snprintf(buf, sizeof(buf), "ADC1->ISR = %08lX\r\n", ADC1->ISR);
- 	uart_send_string_it(buf);
+ 	ADC_TEST_DMA_Circular_TRGO_Init();
 
   /* USER CODE END 2 */
 
@@ -224,40 +180,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(tim16_it_flag)
-	  {
 
-
-		  tim16_it_flag = 0;
-	  }
-	  if(ADC_DMA_IsReady())
-	  {
-		  adc_value = ADC_DMA_Read_Sequence();
-		  true_VDDA = ADC_CalcVDDA(adc_value[1]);
-		  true_temp = ADC_CalcTemperature_x100(adc_value[2], adc_value[1]);
-
-		  snprintf(buf, sizeof(buf),  "CH5 = %u\r\n", adc_value[0]);
-		  uart_send_string_it(buf);
-		  snprintf(buf, sizeof(buf),  "VREFINT = %u\r\n", true_VDDA);
-		  uart_send_string_it(buf);
-		  snprintf(buf, sizeof(buf),  "TEMP  = %ld\r\n", true_temp);
-		  uart_send_string_it(buf);
-
-		  snprintf(buf, sizeof(buf),  "VREFINT_CAL  = %u\r\n", (*VREFINT_CAL_ADDR));
-		  uart_send_string_it(buf);
-		  snprintf(buf, sizeof(buf),  "VREFINT adc  = %u\r\n", adc_value[1]);
-		  uart_send_string_it(buf);
-
-//
-//		  snprintf(buf, sizeof(buf),  "CH6 = %u\r\n", adc_value[1]);
-//		  uart_send_string_it(buf);
-//
-//		  snprintf(buf, sizeof(buf),  "CH7 = %u\r\n", adc_value[2]);
-//		  uart_send_string_it(buf);
-
-		  snprintf(buf, sizeof(buf),  "---------------");
-		  uart_send_string_it(buf);
-	  }
+	  ADC_Test_DMA_Circular_TRGO_While();
 
     /* USER CODE END WHILE */
 
@@ -332,18 +256,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void TIM1_UP_TIM16_IRQHandler(void)
 
-{
-    if (TIM16->SR & TIM_SR_UIF) {
-        TIM16->SR &= ~TIM_SR_UIF; // Сброс флага
-
-        tim16_it_flag = 1;
-
-        GPIOA->ODR ^= GPIO_ODR_OD3;// Ваш код
-
-    }
-}
 /* USER CODE END 4 */
 
 /**

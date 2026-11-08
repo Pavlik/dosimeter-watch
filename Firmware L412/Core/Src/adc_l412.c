@@ -168,6 +168,7 @@ uint16_t* ADC_DMA_Read_Sequence()
 	return adc_buffer_sequence;
 }
 
+// Only for NORMAL DMA mode
 void ADC_Start_DMA_Conversion(void)
 {
     DMA1_Channel1->CCR &= ~DMA_CCR_EN;

@@ -112,6 +112,8 @@ uint8_t ADC_DMA_IsReady();
 
 uint16_t ADC_ReadChannel(uint8_t channel);
 
+bool ADC_WaitConversionComplete(uint32_t timeout);
+
 
 
 #endif /* INC_ADC_L412_H_ */
