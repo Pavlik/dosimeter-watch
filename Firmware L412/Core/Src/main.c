@@ -173,7 +173,12 @@ int main(void)
  	 USART1->CR1 |= USART_CR1_UE; // ENABLE UART1
 
 
- 	ADC_Init();
+ 	ADC_Init(ADC_MODE_DMA_CIRCULAR);
+ 	ADC_EnableVrefInt();
+ 	ADC_EnableTempSensor();
+ 	ADC_SetTrigger(ADC_TRIGGER_TIM15_TRGO);
+ 	ADC_Enable();
+
  	ADC_DMA_Config(CIRCULAR_MODE);
  	uart_send_init();
 

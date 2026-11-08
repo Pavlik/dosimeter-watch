@@ -14,6 +14,14 @@
 
 #define ADC_DMA_AMOUNT_TRANSFER 3
 
+typedef enum
+{
+    ADC_MODE_POLLING = 0,
+    ADC_MODE_DMA_NORMAL,
+    ADC_MODE_DMA_CIRCULAR
+
+} ADC_Mode_t;
+
 
 typedef enum
 {
@@ -42,9 +50,10 @@ typedef enum
 
 typedef enum
 {
-    ADC_TRIGGER_SOFTWARE,
+    ADC_TRIGGER_SOFTWARE = 0,
     ADC_TRIGGER_TIM15_TRGO
-} ADC_Trigger;
+	// ADC_TRIGGER_EXTI11 ... other trigger sources
+} ADC_Trigger_t;
 
 typedef enum
 {
@@ -71,6 +80,12 @@ typedef enum
 	ADC_SAMPLE_640_5CYCLES
 }Adc_Sample_cycles;
 
+void ADC_Init(ADC_Mode_t mode);
+void ADC_EnableVrefInt();
+void ADC_EnableTempSensor();
+
+void ADC_SetTrigger(ADC_Trigger_t trigger);
+void ADC_Enable();
 
 void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time);
 void ADC_SelectChannel(uint8_t channel);
@@ -83,7 +98,7 @@ bool ADC_IsConversionComplete(void);
 uint16_t ADC_GetValue(void);
 bool ADC_IsBusy(void);
 
-void ADC_Init(void);
+
 
 void ADC1_DMA_Enable();
 void ADC1_DMA_Disable();

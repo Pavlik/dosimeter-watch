@@ -11,7 +11,7 @@ static uint16_t adc_buffer_sequence[ADC_DMA_AMOUNT_TRANSFER];
 
 static volatile uint8_t adc_dma_ready = 0;
 
-void ADC_Init(void)
+void ADC_Init(ADC_Mode_t mode)
 {
 	RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN; // ADC CLOCK ENABLE
 
@@ -29,20 +29,51 @@ void ADC_Init(void)
 
 	ADC1->CFGR = 0;
 
-	/*TRGO config START*/
+	switch(mode)
+	{
+	    case ADC_MODE_POLLING:
+	        break;
 
-	ADC1->CFGR &= ~ADC_CFGR_EXTSEL;
-	ADC1->CFGR |= (14 << ADC_CFGR_EXTSEL_Pos); // source of adc_atart
-	ADC1->CFGR |= ADC_CFGR_EXTEN_0;  // ENABLE START FROM RISING EDGE
+	    case ADC_MODE_DMA_NORMAL:
 
-	/*TRGO config END*/
+	        ADC1->CFGR |= ADC_CFGR_DMAEN;
+	        break;
 
+	    case ADC_MODE_DMA_CIRCULAR:
+
+	        ADC1->CFGR |= ADC_CFGR_DMAEN;
+	        ADC1->CFGR |= ADC_CFGR_DMACFG;
+	        break;
+	}
+}
+void ADC_EnableVrefInt()
+{
 	/*ENABLE VREFINT INTERNAL CHANNEL*/
 	ADC12_COMMON->CCR |= ADC_CCR_VREFEN;
-
+}
+void ADC_EnableTempSensor()
+{
 	/*ENABLE TEMPERATURE CH17 INTERNAL CHANNEL*/
 	ADC12_COMMON->CCR |= ADC_CCR_TSEN;
+}
 
+void ADC_SetTrigger(ADC_Trigger_t trigger)
+{
+	ADC1->CFGR &= ~ADC_CFGR_EXTSEL;
+	ADC1->CFGR &= ~ADC_CFGR_EXTEN;
+	switch(trigger)
+	{
+		case ADC_TRIGGER_SOFTWARE:
+			break;
+		case ADC_TRIGGER_TIM15_TRGO:
+		    ADC1->CFGR |= (14U << ADC_CFGR_EXTSEL_Pos); // source of adc_start
+		    ADC1->CFGR |= ADC_CFGR_EXTEN_0; // ENABLE START FROM RISING EDGE
+		    break;
+	}
+}
+
+void ADC_Enable()
+{
     ADC1->ISR |= ADC_ISR_ADRDY;
     ADC1->CR |= ADC_CR_ADEN;
 
@@ -63,9 +94,6 @@ void ADC1_DMA_Disable()
 
 void ADC_DMA_Config(DMA_Mode mode)
 {
-	ADC1->CFGR |= ADC_CFGR_DMAEN; // enable adc dma
-	ADC1->CFGR |= ADC_CFGR_DMACFG; // adc dma circular mode ?
-
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN; // enable DMA clock
 
 	ADC1_DMA_Disable();
