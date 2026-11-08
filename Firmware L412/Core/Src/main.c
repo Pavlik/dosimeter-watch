@@ -178,6 +178,7 @@ int main(void)
  	ADC_EnableTempSensor();
  	ADC_SetTrigger(ADC_TRIGGER_TIM15_TRGO);
  	ADC_Enable();
+ 	ADC_Start();
 
  	ADC_DMA_Config(CIRCULAR_MODE);
  	uart_send_init();

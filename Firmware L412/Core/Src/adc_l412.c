@@ -78,8 +78,34 @@ void ADC_Enable()
     ADC1->CR |= ADC_CR_ADEN;
 
     while(!(ADC1->ISR & ADC_ISR_ADRDY));
+}
+
+void ADC_Disable()
+{
+    if (ADC1->CR & ADC_CR_ADEN)
+    {
+        ADC1->CR |= ADC_CR_ADDIS;
+        while (ADC1->CR & ADC_CR_ADEN);
+    }
+}
+
+void ADC_Start(void)
+{
+    ADC1->ISR |= ADC_ISR_EOC; // end of conversion flag
+    ADC1->ISR |= ADC_ISR_EOS; // end of sequence flag
+    ADC1->ISR |= ADC_ISR_OVR; // ADC overrun flag 0 - no overrum occurs/ 1 - overrun has occurred
 
     ADC1->CR |= ADC_CR_ADSTART;
+}
+
+void ADC_Stop(void)
+{
+    if (ADC1->CR & ADC_CR_ADSTART)
+    {
+        ADC1->CR |= ADC_CR_ADSTP;
+
+        while (ADC1->CR & ADC_CR_ADSTP);
+    }
 }
 
 void ADC1_DMA_Enable()
@@ -209,26 +235,6 @@ void ADC_SetSequenceChannel(uint8_t rank, uint8_t channel)
     *sqr |= ((uint32_t)channel << pos);
 }
 
-
-
-void ADC_Start(void)
-{
-    ADC1->ISR |= ADC_ISR_EOC; // end of conversion flag
-    ADC1->ISR |= ADC_ISR_EOS; // end of sequence flag
-    ADC1->ISR |= ADC_ISR_OVR; // ADC overrun flag 0 - no overrum occurs/ 1 - overrun has occurred
-
-    ADC1->CR |= ADC_CR_ADSTART;
-}
-
-void ADC_Stop(void)
-{
-    if (ADC1->CR & ADC_CR_ADSTART)
-    {
-        ADC1->CR |= ADC_CR_ADSTP;
-
-        while (ADC1->CR & ADC_CR_ADSTP);
-    }
-}
 
 bool ADC_WaitConversionComplete(uint32_t timeout)
 {
