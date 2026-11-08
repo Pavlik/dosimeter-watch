@@ -13,9 +13,7 @@
 #include "stdbool.h"
 
 #define ADC_DMA_AMOUNT_TRANSFER 3
-#define VREFINT_CAL_ADDR ((uint16_t*)0x1FFF75AA)
-#define TEMP30_CAL_ADDR ((uint16_t*)0x1FFF75A8)
-#define TEMP130_CAL_ADDR ((uint16_t*)0x1FFF75CA)
+
 
 typedef enum
 {
@@ -36,8 +34,24 @@ typedef enum
     ADC_CH14,
     ADC_CH15,
     ADC_CH16,
-	ADC_CH17
+	ADC_CH17,
+
+	ADC_CH_VREFINT = ADC_CH0,
+	ADC_CH_TEMP = ADC_CH17
 } Adc_Channel;
+
+typedef enum
+{
+    ADC_TRIGGER_SOFTWARE,
+    ADC_TRIGGER_TIM15_TRGO
+} ADC_Trigger;
+
+typedef enum
+{
+    ADC_READ_POLLING,
+    ADC_READ_DMA,
+    ADC_READ_DMA_CIRCULAR
+} ADC_ReadMode;
 
 typedef enum
 {
@@ -74,14 +88,11 @@ void ADC_Init(void);
 void ADC1_DMA_Enable();
 void ADC1_DMA_Disable();
 void ADC_DMA_Config(DMA_Mode mode);
-uint16_t ADC_DMA_Read(void);
 uint16_t* ADC_DMA_Read_Sequence();
 void ADC_Start_DMA_Conversion(void);
 uint8_t ADC_DMA_IsReady();
 
 uint16_t ADC_ReadChannel(uint8_t channel);
-
-uint16_t getVrefint_call();
 
 
 

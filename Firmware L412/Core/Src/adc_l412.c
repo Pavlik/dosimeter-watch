@@ -8,8 +8,6 @@
 #include "adc_l412.h"
 
 static uint16_t adc_buffer_sequence[ADC_DMA_AMOUNT_TRANSFER];
-static uint16_t adc_buffer;
-static uint16_t Vrefint;
 
 static volatile uint8_t adc_dma_ready = 0;
 
@@ -121,14 +119,6 @@ void ADC_DMA_Config(DMA_Mode mode)
 	NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
 	ADC1_DMA_Enable();
-}
-
-
-
-
-uint16_t ADC_DMA_Read(void)
-{
-    return adc_buffer;
 }
 
 uint16_t* ADC_DMA_Read_Sequence()
@@ -270,14 +260,6 @@ uint8_t ADC_DMA_IsReady()
 	adc_dma_ready = 0;
 	return buf_adc_dma_ready;
 }
-
-uint16_t getVrefint_call()
-{
-	Vrefint = *VREFINT_CAL_ADDR;
-	return Vrefint;
-}
-
-
 
 void DMA1_Channel1_IRQHandler(void)
 {

@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "uart_transmit.h"
 #include "adc_l412.h"
+#include "adc_measurment.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -206,20 +207,10 @@ int main(void)
   {
 	  if(tim16_it_flag)
 	  {
-		  //ADC_Start_DMA_Conversion();
-		  //ADC_Start();
-//		  while(DMA1_Channel1->CNDTR != 0);
-//		  adc_ch5_value = ADC_Read_DMA();
+		  adc_value = ADC_DMA_Read_Sequence();
 
-
-		  true_VDDA = 3000 *(*VREFINT_CAL_ADDR) / adc_value[1];
-		  int32_t correctd_temp_raw = ((int32_t)adc_value[2]* (*VREFINT_CAL_ADDR)/adc_value[1]);
-		  //true_temp = (100/(int32_t)((*TEMP130_CAL_ADDR) - (*TEMP30_CAL_ADDR))) * (correctd_temp_raw - (*TEMP30_CAL_ADDR)) + 30;
-
-		  true_temp =
-				  3000 +
-				  ((int32_t)(correctd_temp_raw - (*TEMP30_CAL_ADDR)) * 10000)/
-				  ((*TEMP130_CAL_ADDR) - (*TEMP30_CAL_ADDR));
+		  true_VDDA = ADC_CalcVDDA(adc_value[1]);
+		  true_temp = ADC_CalcTemperature_x100(adc_value[2], adc_value[1]);
 
 		  tim16_it_flag = 0;
 	  }
