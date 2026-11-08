@@ -4,7 +4,7 @@
  *  Created on: Nov 8, 2026
  *      Author: Pavel
  */
-#include "test.h"
+#include "adc_test.h"
  	char buf[32] = {0,};
     uint16_t true_VDDA;
     int32_t true_temp;
