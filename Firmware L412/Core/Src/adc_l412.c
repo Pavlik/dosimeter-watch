@@ -13,8 +13,11 @@ void ADC_Init(ADC_Mode_t mode)
 {
 	RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN; // ADC CLOCK ENABLE
 
-	ADC1->CR &= ~ADC_CR_ADEN; // SWITCH OF ADC1
-	while (ADC1->CR & ADC_CR_ADEN);
+	if (ADC1->CR & ADC_CR_ADEN)
+	{
+	    ADC1->CR |= ADC_CR_ADDIS;
+	    while (ADC1->CR & ADC_CR_ADEN);
+	} // Иначе при повторной инициализации возможен сбой
 
 	ADC1->CR &= ~ADC_CR_DEEPPWD;
 
@@ -44,15 +47,52 @@ void ADC_Init(ADC_Mode_t mode)
 	        break;
 	}
 }
+
+void ADC_Enable()
+{
+	ADC1->ISR = ADC_ISR_ADRDY;
+    ADC1->CR |= ADC_CR_ADEN;
+
+    while(!(ADC1->ISR & ADC_ISR_ADRDY));
+}
+
+void ADC_Disable()
+{
+    if (ADC1->CR & ADC_CR_ADEN)
+    {
+    	ADC1->CR |= ADC_CR_ADDIS;
+    	while (ADC1->CR & ADC_CR_ADDIS);
+    }
+}
+
+void ADC_Start(void)
+{
+	ADC1->ISR = ADC_ISR_EOC | ADC_ISR_EOS | ADC_ISR_OVR;
+
+    ADC1->CR |= ADC_CR_ADSTART;
+}
+
+void ADC_Stop(void)
+{
+    if (ADC1->CR & ADC_CR_ADSTART)
+    {
+        ADC1->CR |= ADC_CR_ADSTP;
+
+        while (ADC1->CR & ADC_CR_ADSTP);
+    }
+}
+
 void ADC_EnableVrefInt()
 {
 	/*ENABLE VREFINT INTERNAL CHANNEL*/
 	ADC12_COMMON->CCR |= ADC_CCR_VREFEN;
+	for (volatile int i = 0; i < 100; i++);  // ~10 мкс при 16 МГц
 }
 void ADC_EnableTempSensor()
 {
 	/*ENABLE TEMPERATURE CH17 INTERNAL CHANNEL*/
 	ADC12_COMMON->CCR |= ADC_CCR_TSEN;
+	for (volatile int i = 0; i < 100; i++);  // ~10 мкс при 16 МГц
 }
 
 void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
@@ -83,6 +123,8 @@ void ADC_SetSequenceLength(uint8_t len)
 
 void ADC_SetSequenceChannel(uint8_t rank, uint8_t channel)
 {
+	if(channel > 18)
+		return;
     volatile uint32_t *sqr;
     uint32_t pos;
     if ((rank < 1) || (rank > 16))
@@ -90,7 +132,7 @@ void ADC_SetSequenceChannel(uint8_t rank, uint8_t channel)
     if (rank <= 4)
     {
         sqr = &ADC1->SQR1;
-        pos = 6U + ((rank - 1U) * 6U);
+        pos = ADC_SQR1_SQ1_Pos + ((rank - 1U) * 6U);
     }
     else if (rank <= 9)
     {
@@ -113,6 +155,7 @@ void ADC_SetSequenceChannel(uint8_t rank, uint8_t channel)
 
 void ADC_SetTrigger(ADC_Trigger_t trigger)
 {
+	ADC_Stop();
 	ADC1->CFGR &= ~ADC_CFGR_EXTSEL;
 	ADC1->CFGR &= ~ADC_CFGR_EXTEN;
 	switch(trigger)
@@ -126,39 +169,7 @@ void ADC_SetTrigger(ADC_Trigger_t trigger)
 	}
 }
 
-void ADC_Enable()
-{
-    ADC1->ISR |= ADC_ISR_ADRDY;
-    ADC1->CR |= ADC_CR_ADEN;
 
-    while(!(ADC1->ISR & ADC_ISR_ADRDY));
-}
-
-void ADC_Disable()
-{
-    if (ADC1->CR & ADC_CR_ADEN)
-    {
-        ADC1->CR |= ADC_CR_ADDIS;
-        while (ADC1->CR & ADC_CR_ADEN);
-    }
-}
-
-void ADC_Start(void)
-{
-	ADC1->ISR = ADC_ISR_EOC | ADC_ISR_EOS | ADC_ISR_OVR;
-
-    ADC1->CR |= ADC_CR_ADSTART;
-}
-
-void ADC_Stop(void)
-{
-    if (ADC1->CR & ADC_CR_ADSTART)
-    {
-        ADC1->CR |= ADC_CR_ADSTP;
-
-        while (ADC1->CR & ADC_CR_ADSTP);
-    }
-}
 
 void ADC_DMA_Enable()
 {
@@ -189,6 +200,7 @@ void ADC_DMA_DisableIRQ()
 
 void ADC_DMA_Config(uint16_t *buffer, uint16_t length, DMA_Mode mode)
 {
+	if (length == 0 || length > 65535) return;
 	ADC_DMA_Disable();
 	DMA1_Channel1->CCR = 0;
 
@@ -217,17 +229,20 @@ void ADC_DMA_Config(uint16_t *buffer, uint16_t length, DMA_Mode mode)
 	else
 		DMA1_Channel1->CCR &= ~DMA_CCR_MINC;  // disable memory increment
 	DMA1_Channel1->CCR &= ~DMA_CCR_DIR; // dirrection is from Peripheral to Memory
+	DMA1->IFCR |= DMA_IFCR_CTCIF1;
 }
 
 
 // Only for NORMAL DMA mode
-void ADC_Start_DMA_Conversion(uint16_t length)
+void ADC_Start_DMA_Normal_Conversion(uint16_t length)
 {
     DMA1_Channel1->CCR &= ~DMA_CCR_EN;
 
     DMA1_Channel1->CNDTR = length;
 
     DMA1_Channel1->CCR |= DMA_CCR_EN;
+
+    DMA1->IFCR |= DMA_IFCR_CTCIF1;
 
     ADC_Start();
 }
@@ -268,6 +283,7 @@ uint8_t ADC_DMA_IsReady()
 
 void DMA1_Channel1_IRQHandler(void)
 {
+	// 6. Отсутствует сброс флага OVR в DMA-режиме
     if(DMA1->ISR & DMA_ISR_TCIF1)
     {
     	DMA1->IFCR =
@@ -275,6 +291,12 @@ void DMA1_Channel1_IRQHandler(void)
     	    | DMA_IFCR_CTCIF1
     	    | DMA_IFCR_CHTIF1
     	    | DMA_IFCR_CTEIF1;
+
+        if (ADC1->ISR & ADC_ISR_OVR)
+        {
+            ADC1->ISR = ADC_ISR_OVR;
+            // при необходимости — перезапуск
+        }
 
         adc_dma_ready = 1;
     }
