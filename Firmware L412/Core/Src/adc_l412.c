@@ -108,22 +108,11 @@ void ADC_Stop(void)
     }
 }
 
-void ADC1_DMA_Enable()
-{
-	DMA1_Channel1->CCR |= DMA_CCR_EN; // Start DMA
-}
-
-void ADC1_DMA_Disable()
-{
-	DMA1_Channel1->CCR &= ~DMA_CCR_EN; // Stop DMA
-}
 
 void ADC_DMA_Config(DMA_Mode mode)
 {
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN; // enable DMA clock
 
-	ADC1_DMA_Disable();
-
+	DMA1_Channel1->CCR &= ~DMA_CCR_EN; // Stop DMA
 	DMA1_Channel1->CCR = 0;
 
 	/* Enable circular mode*/
@@ -160,7 +149,7 @@ void ADC_DMA_Config(DMA_Mode mode)
 	DMA1_Channel1->CCR |= DMA_CCR_TCIE; // enable interruption when transfer ends
 	NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
-	ADC1_DMA_Enable();
+	DMA1_Channel1->CCR |= DMA_CCR_EN; // Start DMA
 }
 
 uint16_t* ADC_DMA_Read_Sequence()

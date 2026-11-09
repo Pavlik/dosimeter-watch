@@ -171,9 +171,15 @@ int main(void)
  	 USART1->CR1 = USART_CR1_TE | USART_CR1_RE; // ENABLE UART1 RX/TX
  	 USART1->CR1 |= USART_CR1_UE; // ENABLE UART1
 
+ 	 /*DMA1 ADC CONFIG START*/
+
+ 	 RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN; // enable DMA clock
+ 	 ADC_TEST_DMA_Circular_TRGO_Init();
+ 	 /*DMA1 ADC CONFIG END*/
+
 
  	uart_send_init();
- 	ADC_TEST_DMA_Circular_TRGO_Init();
+
 
   /* USER CODE END 2 */
 

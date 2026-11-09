@@ -101,10 +101,6 @@ bool ADC_IsConversionComplete(void);
 uint16_t ADC_GetValue(void);
 bool ADC_IsBusy(void);
 
-
-
-void ADC1_DMA_Enable();
-void ADC1_DMA_Disable();
 void ADC_DMA_Config(DMA_Mode mode);
 uint16_t* ADC_DMA_Read_Sequence();
 void ADC_Start_DMA_Conversion(void);

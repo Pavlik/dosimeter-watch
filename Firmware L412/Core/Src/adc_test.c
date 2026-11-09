@@ -78,12 +78,7 @@ void ADC_Test_DMA_Circular_TRGO_While()
 		  uart_send_string_it(buf);
 		  snprintf(buf, sizeof(buf),  "TEMP  = %ld\r\n", true_temp);
 		  uart_send_string_it(buf);
-
-		  snprintf(buf, sizeof(buf),  "VREFINT_CAL  = %u\r\n", (*VREFINT_CAL_ADDR));
-		  uart_send_string_it(buf);
-		  snprintf(buf, sizeof(buf),  "VREFINT adc  = %u\r\n", adc_value[1]);
-		  uart_send_string_it(buf);
-		  snprintf(buf, sizeof(buf),  "---------------");
+		  snprintf(buf, sizeof(buf),  "---------------\r\n");
 		  uart_send_string_it(buf);
 	  }
 }
