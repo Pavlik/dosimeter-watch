@@ -22,10 +22,10 @@
 void ADC_Test_Polling_Init()
 {
 	ADC_Init(ADC_MODE_POLLING);
-	ADC_Enable();
 	ADC_SetSequenceLength(1);
 	ADC_SetSequenceChannel(1, ADC_CH5);
 	ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_640_5CYCLES);
+	ADC_Enable();
 }
 
 void ADC_TEST_DMA_Circular_TRGO_Init()
@@ -44,12 +44,12 @@ void ADC_TEST_DMA_Circular_TRGO_Init()
     ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_12_5CYCLES);
     ADC_SetSampleTime(ADC_CH_VREFINT, ADC_SAMPLE_640_5CYCLES);
     ADC_SetSampleTime(ADC_CH17, ADC_SAMPLE_640_5CYCLES);
-
-	ADC_Enable();
-	ADC_Start();
 	//ADC_DMA_Config(CIRCULAR_MODE);
 	ADC_DMA_Config(adc_value, 3, DMA_CIRCULAR_MODE);
 	ADC_DMA_Enable();
+
+	ADC_Enable();
+	ADC_Start();
 }
 
 void ADC_Test_Polling_While()

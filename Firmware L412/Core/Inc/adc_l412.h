@@ -57,13 +57,6 @@ typedef enum
 
 typedef enum
 {
-    ADC_READ_POLLING,
-    ADC_READ_DMA,
-    ADC_READ_DMA_CIRCULAR
-} ADC_ReadMode;
-
-typedef enum
-{
 	DMA_NORMAL_MODE  = 0,
 	DMA_CIRCULAR_MODE
 }DMA_Mode;

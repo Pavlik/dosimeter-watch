@@ -57,14 +57,14 @@ void ADC_EnableTempSensor()
 
 void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
 {
-
+	if (channel > 18) return;
 	if(channel <= 9)
 	{
 		uint32_t pos = channel * 3U;
 		ADC1->SMPR1 &= ~(0x7U << pos);
 		ADC1->SMPR1 |= ((uint32_t)sample_time << pos);
 	}
-	else if(channel > 9 )
+	else
 	{
 		uint32_t pos = (channel - 10U) * 3U;
 		ADC1->SMPR2 &= ~(0x7U << pos);
@@ -145,9 +145,7 @@ void ADC_Disable()
 
 void ADC_Start(void)
 {
-    ADC1->ISR |= ADC_ISR_EOC; // end of conversion flag
-    ADC1->ISR |= ADC_ISR_EOS; // end of sequence flag
-    ADC1->ISR |= ADC_ISR_OVR; // ADC overrun flag 0 - no overrum occurs/ 1 - overrun has occurred
+	ADC1->ISR = ADC_ISR_EOC | ADC_ISR_EOS | ADC_ISR_OVR;
 
     ADC1->CR |= ADC_CR_ADSTART;
 }
@@ -254,20 +252,6 @@ bool ADC_IsConversionComplete(void)
 uint16_t ADC_GetValue(void)
 {
     return (uint16_t)ADC1->DR;
-}
-
-
-uint16_t ADC_ReadChannel(uint8_t channel) // blocking method of reading channel
-{
-    ADC_SelectChannel(channel);
-    ADC_SetSampleTime(channel, ADC_SAMPLE_640_5CYCLES);
-
-    ADC_Start();
-
-    //while(!ADC_IsConversionComplete());
-    while(ADC_WaitConversionComplete(100000));
-
-    return ADC_GetValue();
 }
 
 bool ADC_IsBusy(void)
