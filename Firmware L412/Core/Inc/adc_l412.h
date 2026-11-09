@@ -12,7 +12,7 @@
 #include "stm32l4xx.h"
 #include "stdbool.h"
 
-#define ADC_DMA_AMOUNT_TRANSFER 3
+#define ADC_DMA_AMOUNT_TRANSFER
 
 typedef enum
 {
@@ -103,7 +103,7 @@ bool ADC_IsBusy(void);
 
 void ADC_DMA_Config(uint16_t *buffer, uint8_t length, DMA_Mode mode);
 uint16_t* ADC_DMA_Read_Sequence();
-void ADC_Start_DMA_Conversion(void);
+void ADC_Start_DMA_Conversion(uint8_t length);
 uint8_t ADC_DMA_IsReady();
 
 uint16_t ADC_ReadChannel(uint8_t channel);

@@ -7,8 +7,6 @@
 
 #include "adc_l412.h"
 
-static uint16_t adc_buffer_sequence[ADC_DMA_AMOUNT_TRANSFER];
-
 static volatile uint8_t adc_dma_ready = 0;
 
 void ADC_Init(ADC_Mode_t mode)
@@ -137,7 +135,7 @@ void ADC_DMA_Config(uint16_t *buffer, uint8_t length, DMA_Mode mode)
 	/*in  circular mode peripheral stay in non-incremental mode and the memory become incremental*/
 
 	DMA1_Channel1->CCR &= ~DMA_CCR_PINC; // disable increment of Peripheral
-	if(ADC_DMA_AMOUNT_TRANSFER > 1)
+	if(length > 1)
 		DMA1_Channel1->CCR |= DMA_CCR_MINC;  // enable memory increment3
 	else
 		DMA1_Channel1->CCR &= ~DMA_CCR_MINC;  // disable memory increment
@@ -152,17 +150,13 @@ void ADC_DMA_Config(uint16_t *buffer, uint8_t length, DMA_Mode mode)
 	DMA1_Channel1->CCR |= DMA_CCR_EN; // Start DMA
 }
 
-uint16_t* ADC_DMA_Read_Sequence()
-{
-	return adc_buffer_sequence;
-}
 
 // Only for NORMAL DMA mode
-void ADC_Start_DMA_Conversion(void)
+void ADC_Start_DMA_Conversion(uint8_t length)
 {
     DMA1_Channel1->CCR &= ~DMA_CCR_EN;
 
-    DMA1_Channel1->CNDTR = ADC_DMA_AMOUNT_TRANSFER;
+    DMA1_Channel1->CNDTR = length;
 
     DMA1_Channel1->CCR |= DMA_CCR_EN;
 
