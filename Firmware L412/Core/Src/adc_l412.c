@@ -55,6 +55,62 @@ void ADC_EnableTempSensor()
 	ADC12_COMMON->CCR |= ADC_CCR_TSEN;
 }
 
+void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
+{
+
+	if(channel <= 9)
+	{
+		uint32_t pos = channel * 3U;
+		ADC1->SMPR1 &= ~(0x7U << pos);
+		ADC1->SMPR1 |= ((uint32_t)sample_time << pos);
+	}
+	else if(channel > 9 )
+	{
+		uint32_t pos = (channel - 10U) * 3U;
+		ADC1->SMPR2 &= ~(0x7U << pos);
+		ADC1->SMPR2 |= sample_time << pos;
+	}
+
+}
+
+void ADC_SetSequenceLength(uint8_t len)
+{
+    if ((len < 1) || (len > 16))
+        return;
+    ADC1->SQR1 &= ~ADC_SQR1_L;
+    ADC1->SQR1 |= ((len - 1U) << ADC_SQR1_L_Pos);
+}
+
+void ADC_SetSequenceChannel(uint8_t rank, uint8_t channel)
+{
+    volatile uint32_t *sqr;
+    uint32_t pos;
+    if ((rank < 1) || (rank > 16))
+        return;
+    if (rank <= 4)
+    {
+        sqr = &ADC1->SQR1;
+        pos = 6U + ((rank - 1U) * 6U);
+    }
+    else if (rank <= 9)
+    {
+        sqr = &ADC1->SQR2;
+        pos = (rank - 5U) * 6U;
+    }
+    else if (rank <= 14)
+    {
+        sqr = &ADC1->SQR3;
+        pos = (rank - 10U) * 6U;
+    }
+    else
+    {
+        sqr = &ADC1->SQR4;
+        pos = (rank - 15U) * 6U;
+    }
+    *sqr &= ~(0x1FU << pos);
+    *sqr |= ((uint32_t)channel << pos);
+}
+
 void ADC_SetTrigger(ADC_Trigger_t trigger)
 {
 	ADC1->CFGR &= ~ADC_CFGR_EXTSEL;
@@ -176,62 +232,6 @@ void ADC_Start_DMA_Conversion(uint16_t length)
     DMA1_Channel1->CCR |= DMA_CCR_EN;
 
     ADC_Start();
-}
-
-void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
-{
-
-	if(channel <= 9)
-	{
-		uint32_t pos = channel * 3U;
-		ADC1->SMPR1 &= ~(0x7U << pos);
-		ADC1->SMPR1 |= ((uint32_t)sample_time << pos);
-	}
-	else if(channel > 9 )
-	{
-		uint32_t pos = (channel - 10U) * 3U;
-		ADC1->SMPR2 &= ~(0x7U << pos);
-		ADC1->SMPR2 |= sample_time << pos;
-	}
-
-}
-
-void ADC_SetSequenceLength(uint8_t len)
-{
-    if ((len < 1) || (len > 16))
-        return;
-    ADC1->SQR1 &= ~ADC_SQR1_L;
-    ADC1->SQR1 |= ((len - 1U) << ADC_SQR1_L_Pos);
-}
-
-void ADC_SetSequenceChannel(uint8_t rank, uint8_t channel)
-{
-    volatile uint32_t *sqr;
-    uint32_t pos;
-    if ((rank < 1) || (rank > 16))
-        return;
-    if (rank <= 4)
-    {
-        sqr = &ADC1->SQR1;
-        pos = 6U + ((rank - 1U) * 6U);
-    }
-    else if (rank <= 9)
-    {
-        sqr = &ADC1->SQR2;
-        pos = (rank - 5U) * 6U;
-    }
-    else if (rank <= 14)
-    {
-        sqr = &ADC1->SQR3;
-        pos = (rank - 10U) * 6U;
-    }
-    else
-    {
-        sqr = &ADC1->SQR4;
-        pos = (rank - 15U) * 6U;
-    }
-    *sqr &= ~(0x1FU << pos);
-    *sqr |= ((uint32_t)channel << pos);
 }
 
 
