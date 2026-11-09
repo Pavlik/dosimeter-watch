@@ -133,9 +133,8 @@ void ADC_DMA_DisableIRQ()
 }
 
 
-void ADC_DMA_Config(uint16_t *buffer, uint8_t length, DMA_Mode mode)
+void ADC_DMA_Config(uint16_t *buffer, uint16_t length, DMA_Mode mode)
 {
-
 	ADC_DMA_Disable();
 	DMA1_Channel1->CCR = 0;
 
@@ -147,10 +146,8 @@ void ADC_DMA_Config(uint16_t *buffer, uint8_t length, DMA_Mode mode)
 		DMA1_Channel1->CCR &= ~DMA_CCR_CIRC;
 	}
 
-
 	DMA1_Channel1->CPAR = (uint32_t)&ADC1->DR; // data source
 	DMA1_Channel1->CMAR = (uint32_t)buffer; // memory address !!!!& - only for one variable
-
 	/*Because of adc is 12 bits wee need uint16_t data / Half Word for both sides*/
 	DMA1_Channel1->CCR |= DMA_CCR_PSIZE_0; // Peripheral - Half Word
 	DMA1_Channel1->CCR |= DMA_CCR_MSIZE_0; // Memory     - Half Word
@@ -165,19 +162,12 @@ void ADC_DMA_Config(uint16_t *buffer, uint8_t length, DMA_Mode mode)
 		DMA1_Channel1->CCR |= DMA_CCR_MINC;  // enable memory increment3
 	else
 		DMA1_Channel1->CCR &= ~DMA_CCR_MINC;  // disable memory increment
-
-
-
 	DMA1_Channel1->CCR &= ~DMA_CCR_DIR; // dirrection is from Peripheral to Memory
-
-
-
-
 }
 
 
 // Only for NORMAL DMA mode
-void ADC_Start_DMA_Conversion(uint8_t length)
+void ADC_Start_DMA_Conversion(uint16_t length)
 {
     DMA1_Channel1->CCR &= ~DMA_CCR_EN;
 

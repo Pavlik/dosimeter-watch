@@ -106,9 +106,9 @@ void ADC_DMA_Disable();
 void ADC_DMA_EnableIRQ(uint8_t priority);
 void ADC_DMA_DisableIRQ();
 
-void ADC_DMA_Config(uint16_t *buffer, uint8_t length, DMA_Mode mode);
+void ADC_DMA_Config(uint16_t *buffer, uint16_t length, DMA_Mode mode);
 uint16_t* ADC_DMA_Read_Sequence();
-void ADC_Start_DMA_Conversion(uint8_t length);
+void ADC_Start_DMA_Conversion(uint16_t length);
 uint8_t ADC_DMA_IsReady();
 
 uint16_t ADC_ReadChannel(uint8_t channel);
