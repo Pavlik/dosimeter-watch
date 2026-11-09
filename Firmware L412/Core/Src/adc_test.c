@@ -49,6 +49,7 @@ void ADC_TEST_DMA_Circular_TRGO_Init()
 	ADC_Start();
 	//ADC_DMA_Config(CIRCULAR_MODE);
 	ADC_DMA_Config(adc_value, 3, CIRCULAR_MODE);
+	ADC_DMA_Enable();
 }
 
 void ADC_Test_Polling_While()
@@ -73,10 +74,7 @@ void ADC_Test_DMA_Circular_TRGO_While()
 	  if(tim16_it_flag)
 	  {
 		  tim16_it_flag = 0;
-	  }
-	  if(ADC_DMA_IsReady())
-	  {
-		  //adc_value = ADC_DMA_Read_Sequence();
+
 		  true_VDDA = ADC_CalcVDDA(adc_value[ADC_CH_VREFINT_Pos]);
 		  true_temp = ADC_CalcTemperature_x100(adc_value[ADC_CH_TEMP_Pos], adc_value[ADC_CH_VREFINT_Pos]);
 

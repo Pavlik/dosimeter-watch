@@ -101,6 +101,11 @@ bool ADC_IsConversionComplete(void);
 uint16_t ADC_GetValue(void);
 bool ADC_IsBusy(void);
 
+void ADC_DMA_Enable();
+void ADC_DMA_Disable();
+void ADC_DMA_EnableIRQ(uint8_t priority);
+void ADC_DMA_DisableIRQ();
+
 void ADC_DMA_Config(uint16_t *buffer, uint8_t length, DMA_Mode mode);
 uint16_t* ADC_DMA_Read_Sequence();
 void ADC_Start_DMA_Conversion(uint8_t length);

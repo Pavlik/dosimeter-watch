@@ -106,11 +106,37 @@ void ADC_Stop(void)
     }
 }
 
+void ADC_DMA_Enable()
+{
+	DMA1_Channel1->CCR |= DMA_CCR_EN; // Start DMA
+}
+
+void ADC_DMA_Disable()
+{
+	DMA1_Channel1->CCR &= ~DMA_CCR_EN; // Stop DMA
+}
+
+
+//only for  Transfer complete interrupt yet
+void ADC_DMA_EnableIRQ(uint8_t priority)
+{
+	DMA1_Channel1->CCR |= DMA_CCR_TCIE;
+	NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+	NVIC_SetPriority(DMA1_Channel1_IRQn, priority);
+}
+
+//only for  Transfer complete interrupt yet
+void ADC_DMA_DisableIRQ()
+{
+	DMA1_Channel1->CCR &= ~DMA_CCR_TCIE;
+	NVIC_DisableIRQ(DMA1_Channel1_IRQn);
+}
+
 
 void ADC_DMA_Config(uint16_t *buffer, uint8_t length, DMA_Mode mode)
 {
 
-	DMA1_Channel1->CCR &= ~DMA_CCR_EN; // Stop DMA
+	ADC_DMA_Disable();
 	DMA1_Channel1->CCR = 0;
 
 	/* Enable circular mode*/
@@ -144,10 +170,9 @@ void ADC_DMA_Config(uint16_t *buffer, uint8_t length, DMA_Mode mode)
 
 	DMA1_Channel1->CCR &= ~DMA_CCR_DIR; // dirrection is from Peripheral to Memory
 
-	DMA1_Channel1->CCR |= DMA_CCR_TCIE; // enable interruption when transfer ends
-	NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
-	DMA1_Channel1->CCR |= DMA_CCR_EN; // Start DMA
+
+
 }
 
 
