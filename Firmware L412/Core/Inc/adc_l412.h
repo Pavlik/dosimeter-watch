@@ -64,8 +64,8 @@ typedef enum
 
 typedef enum
 {
-	ONE_PUSH_MODE = 0,
-	CIRCULAR_MODE
+	DMA_NORMAL_MODE  = 0,
+	DMA_CIRCULAR_MODE
 }DMA_Mode;
 
 typedef enum

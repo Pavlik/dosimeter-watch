@@ -139,7 +139,7 @@ void ADC_DMA_Config(uint16_t *buffer, uint16_t length, DMA_Mode mode)
 	DMA1_Channel1->CCR = 0;
 
 	/* Enable circular mode*/
-	if(mode == CIRCULAR_MODE)
+	if(mode == DMA_CIRCULAR_MODE)
 		DMA1_Channel1->CCR |= DMA_CCR_CIRC;
 	else
 	{

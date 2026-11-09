@@ -48,7 +48,7 @@ void ADC_TEST_DMA_Circular_TRGO_Init()
 	ADC_Enable();
 	ADC_Start();
 	//ADC_DMA_Config(CIRCULAR_MODE);
-	ADC_DMA_Config(adc_value, 3, CIRCULAR_MODE);
+	ADC_DMA_Config(adc_value, 3, DMA_CIRCULAR_MODE);
 	ADC_DMA_Enable();
 }
 
