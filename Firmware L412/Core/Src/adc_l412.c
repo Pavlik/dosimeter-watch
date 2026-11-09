@@ -109,7 +109,7 @@ void ADC_Stop(void)
 }
 
 
-void ADC_DMA_Config(DMA_Mode mode)
+void ADC_DMA_Config(uint16_t *buffer, uint8_t length, DMA_Mode mode)
 {
 
 	DMA1_Channel1->CCR &= ~DMA_CCR_EN; // Stop DMA
@@ -125,13 +125,13 @@ void ADC_DMA_Config(DMA_Mode mode)
 
 
 	DMA1_Channel1->CPAR = (uint32_t)&ADC1->DR; // data source
-	DMA1_Channel1->CMAR = (uint32_t)adc_buffer_sequence; // memory address !!!!& - only for one variable
+	DMA1_Channel1->CMAR = (uint32_t)buffer; // memory address !!!!& - only for one variable
 
 	/*Because of adc is 12 bits wee need uint16_t data / Half Word for both sides*/
 	DMA1_Channel1->CCR |= DMA_CCR_PSIZE_0; // Peripheral - Half Word
 	DMA1_Channel1->CCR |= DMA_CCR_MSIZE_0; // Memory     - Half Word
 
-	DMA1_Channel1->CNDTR = ADC_DMA_AMOUNT_TRANSFER; // amount of transfer elements
+	DMA1_Channel1->CNDTR = length; // amount of transfer elements
 
 	/*in one shot mode both stay in non-incremental mode*/
 	/*in  circular mode peripheral stay in non-incremental mode and the memory become incremental*/
