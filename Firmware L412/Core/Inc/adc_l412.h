@@ -75,6 +75,7 @@ typedef enum
 
 void ADC_Init(ADC_Mode_t mode);
 void ADC_EnableVrefInt();
+
 void ADC_EnableTempSensor();
 
 void ADC_SetTrigger(ADC_Trigger_t trigger);

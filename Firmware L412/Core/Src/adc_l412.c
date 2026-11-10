@@ -12,7 +12,6 @@ static volatile uint8_t adc_dma_ready = 0;
 void ADC_Init(ADC_Mode_t mode)
 {
 	RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN; // ADC CLOCK ENABLE
-
 	if (ADC1->CR & ADC_CR_ADEN)
 	{
 	    ADC1->CR |= ADC_CR_ADDIS;

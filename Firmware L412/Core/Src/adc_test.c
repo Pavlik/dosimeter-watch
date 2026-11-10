@@ -32,7 +32,9 @@ void ADC_TEST_DMA_Circular_TRGO_Init()
 {
 	ADC_Init(ADC_MODE_DMA_CIRCULAR);
 	ADC_EnableVrefInt();
+	delay_us(10);
 	ADC_EnableTempSensor();
+	delay_us(120);
 	ADC_SetTrigger(ADC_TRIGGER_TIM15_TRGO);
 
 	ADC_SetSequenceLength(3);

@@ -10,6 +10,7 @@
 #include "uart_transmit.h"
 #include "adc_l412.h"
 #include "adc_measurment.h"
+#include "delay_us.h"
 
 void ADC_Test_Polling_Init();
 void ADC_TEST_DMA_Circular_TRGO_Init();
