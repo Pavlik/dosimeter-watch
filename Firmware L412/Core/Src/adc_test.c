@@ -40,11 +40,11 @@ void ADC_TEST_DMA_Circular_TRGO_Init()
     ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_12_5CYCLES);
     ADC_SetSampleTime(ADC_CH_VREFINT, ADC_SAMPLE_640_5CYCLES);
     ADC_SetSampleTime(ADC_CH_TEMP, ADC_SAMPLE_640_5CYCLES);
-	//ADC_DMA_Config(CIRCULAR_MODE);
+
     ADC_DMA_Init(adc_value, 3, DMA_CIRCULAR_MODE);
-	ADC_DMA_Enable();
 
 	ADC_Enable();
+	ADC_DMA_Enable();
 	ADC_Start();
 }
 
@@ -89,7 +89,7 @@ void TIM1_UP_TIM16_IRQHandler(void)
 
 {
     if (TIM16->SR & TIM_SR_UIF) {
-        TIM16->SR &= ~TIM_SR_UIF; // Сброс флага
+        TIM16->SR = ~TIM_SR_UIF; // Сброс флага
 
         tim16_it_flag = 1;
 
