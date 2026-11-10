@@ -10,6 +10,7 @@
 
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx.h"
+#include "delay_us.h"
 #include "stdbool.h"
 
 #define ADC_DMA_AMOUNT_TRANSFER

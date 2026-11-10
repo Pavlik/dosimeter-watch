@@ -10,7 +10,13 @@
 #include "uart_transmit.h"
 #include "adc_l412.h"
 #include "adc_measurment.h"
-#include "delay_us.h"
+
+typedef enum
+{
+	ADC_CH5_Pos = 0,
+	ADC_CH_VREFINT_Pos,
+	ADC_CH_TEMP_Pos
+}adc_ch;
 
 void ADC_Test_Polling_Init();
 void ADC_TEST_DMA_Circular_TRGO_Init();

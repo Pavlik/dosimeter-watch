@@ -5,19 +5,13 @@
  *      Author: Pavel
  */
 #include "adc_test.h"
- 	char buf[32] = {0,};
-    uint16_t true_VDDA;
-    int32_t true_temp;
+char buf[32] = {0,};
+uint16_t true_VDDA;
+int32_t true_temp;
 
-    volatile uint8_t tim16_it_flag = 0;
-    uint16_t adc_value[3];
+volatile uint8_t tim16_it_flag = 0;
+uint16_t adc_value[3];
 
-    typedef enum
-    {
-    	ADC_CH5_Pos = 0,
-		ADC_CH_VREFINT_Pos,
-		ADC_CH_TEMP_Pos
-    }adc_ch;
 
 void ADC_Test_Polling_Init()
 {
@@ -32,9 +26,9 @@ void ADC_TEST_DMA_Circular_TRGO_Init()
 {
 	ADC_Init(ADC_MODE_DMA_CIRCULAR);
 	ADC_EnableVrefInt();
-	delay_us(10);
+
 	ADC_EnableTempSensor();
-	delay_us(120);
+
 	ADC_SetTrigger(ADC_TRIGGER_TIM15_TRGO);
 
 	ADC_SetSequenceLength(3);
@@ -45,7 +39,7 @@ void ADC_TEST_DMA_Circular_TRGO_Init()
 
     ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_12_5CYCLES);
     ADC_SetSampleTime(ADC_CH_VREFINT, ADC_SAMPLE_640_5CYCLES);
-    ADC_SetSampleTime(ADC_CH17, ADC_SAMPLE_640_5CYCLES);
+    ADC_SetSampleTime(ADC_CH_TEMP, ADC_SAMPLE_640_5CYCLES);
 	//ADC_DMA_Config(CIRCULAR_MODE);
     ADC_DMA_Init(adc_value, 3, DMA_CIRCULAR_MODE);
 	ADC_DMA_Enable();

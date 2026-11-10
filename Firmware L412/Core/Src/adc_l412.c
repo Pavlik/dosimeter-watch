@@ -113,13 +113,13 @@ void ADC_EnableVrefInt()
 {
 	/*ENABLE VREFINT INTERNAL CHANNEL*/
 	ADC12_COMMON->CCR |= ADC_CCR_VREFEN;
-	for (volatile int i = 0; i < 100; i++);  // ~10 мкс при 16 МГц
+	delay_us(10);
 }
 void ADC_EnableTempSensor()
 {
 	/*ENABLE TEMPERATURE CH17 INTERNAL CHANNEL*/
 	ADC12_COMMON->CCR |= ADC_CCR_TSEN;
-	for (volatile int i = 0; i < 100; i++);  // ~10 мкс при 16 МГц
+	delay_us(120);
 }
 
 void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time)
