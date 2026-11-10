@@ -198,7 +198,7 @@ void ADC_DMA_DisableIRQ()
 }
 
 
-void ADC_DMA_Config(uint16_t *buffer, uint16_t length, DMA_Mode mode)
+void ADC_DMA_Init(uint16_t *buffer, uint16_t length, DMA_Mode mode)
 {
 	if (length == 0 || length > 65535) return;
 	ADC_DMA_Disable();
