@@ -293,14 +293,12 @@ void ADC_DMA_DeInit(void)
 // Only for NORMAL DMA mode
 void ADC_Start_DMA_Normal_Conversion()
 {
-    DMA1_Channel1->CCR &= ~DMA_CCR_EN;
+    //DMA1_Channel1->CCR &= ~DMA_CCR_EN;
     // Использовать CNDTR, уже настроенный в ADC_DMA_Init
-    DMA1_Channel1->CNDTR = DMA_IFCR_CTCIF1;
-
-    DMA1_Channel1->CCR |= DMA_CCR_EN;
+    //DMA1_Channel1->CNDTR = length;
 
     DMA1->IFCR |= DMA_IFCR_CTCIF1;
-
+    DMA1_Channel1->CCR |= DMA_CCR_EN;
     ADC_Start();
 }
 
