@@ -84,6 +84,8 @@ void ADC_Disable();
 void ADC_Start(void);
 void ADC_Stop(void);
 
+void ADC_DeInit(void);
+
 void ADC_SetSampleTime(uint8_t channel, Adc_Sample_cycles sample_time);
 void ADC_SelectChannel(uint8_t channel);
 void ADC_SetSequenceLength(uint8_t len);
@@ -100,6 +102,7 @@ void ADC_DMA_EnableIRQ(uint8_t priority);
 void ADC_DMA_DisableIRQ();
 
 void ADC_DMA_Init(uint16_t *buffer, uint16_t length, DMA_Mode mode);
+void ADC_DMA_DeInit(void);
 uint16_t* ADC_DMA_Read_Sequence();
 void ADC_Start_DMA_Normal_Conversion(uint16_t length);
 uint8_t ADC_DMA_IsReady();

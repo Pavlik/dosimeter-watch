@@ -82,6 +82,31 @@ void ADC_Stop(void)
     }
 }
 
+/**
+ * @brief  Полный сброс периферии ADC (включая регистры, калибровку и т.д.)
+ * @note   После вызова этой функции ADC необходимо заново инициализировать через ADC_Init
+ */
+void ADC_DeInit(void)
+{
+    // 1. Сначала отключаем ADC (в соответствии с процедурой из RM)
+    ADC_Disable();
+
+    // 2. Принудительный сброс периферии ADC через RCC
+    // На STM32L4 бит ADCRST находится в регистре AHB2RSTR (бит 13) [citation:14]
+    RCC->AHB2RSTR |= RCC_AHB2RSTR_ADCRST;
+    // Небольшая задержка для завершения сброса (опционально, но рекомендуется)
+    for (volatile int i = 0; i < 10; i++);
+
+    // 3. Снимаем сигнал сброса (важно: после сброса периферия остается в выключенном состоянии)
+    RCC->AHB2RSTR &= ~RCC_AHB2RSTR_ADCRST;
+
+    // 4. (Опционально) Отключаем тактирование ADC, если оно больше не нужно
+    // RCC->AHB2ENR &= ~RCC_AHB2ENR_ADCEN;
+
+    // 5. Сбрасываем внутренние программные флаги
+    adc_dma_ready = 0;
+}
+
 void ADC_EnableVrefInt()
 {
 	/*ENABLE VREFINT INTERNAL CHANNEL*/
@@ -230,6 +255,36 @@ void ADC_DMA_Init(uint16_t *buffer, uint16_t length, DMA_Mode mode)
 		DMA1_Channel1->CCR &= ~DMA_CCR_MINC;  // disable memory increment
 	DMA1_Channel1->CCR &= ~DMA_CCR_DIR; // dirrection is from Peripheral to Memory
 	DMA1->IFCR |= DMA_IFCR_CTCIF1;
+}
+
+/**
+ * @brief  Сброс только конфигурации DMA, связанной с ADC
+ * @note   Не сбрасывает сам ADC, используется для повторной настройки DMA
+ */
+void ADC_DMA_DeInit(void)
+{
+    // 1. Отключаем канал DMA
+    DMA1_Channel1->CCR &= ~DMA_CCR_EN;
+
+    // 2. Ожидаем фактического отключения (опционально, но безопаснее)
+    while (DMA1_Channel1->CCR & DMA_CCR_EN);
+
+    // 3. Сбрасываем регистр конфигурации канала
+    DMA1_Channel1->CCR = 0;
+
+    // 4. Очищаем количество передач и адреса
+    DMA1_Channel1->CNDTR = 0;
+    DMA1_Channel1->CPAR  = 0;
+    DMA1_Channel1->CMAR  = 0;
+
+    // 5. Очищаем все флаги прерываний канала 1 (глобальный флаг + TC + HT + TE)
+    DMA1->IFCR = DMA_IFCR_CGIF1 | DMA_IFCR_CTCIF1 | DMA_IFCR_CHTIF1 | DMA_IFCR_CTEIF1;
+
+    // 6. Отключаем прерывание в NVIC (если было включено)
+    NVIC_DisableIRQ(DMA1_Channel1_IRQn);
+
+    // 7. Сбрасываем программный флаг готовности
+    adc_dma_ready = 0;
 }
 
 
