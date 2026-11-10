@@ -58,10 +58,13 @@ void ADC_Enable()
 
 void ADC_Disable()
 {
-    if (ADC1->CR & ADC_CR_ADEN)
-    {
-    	ADC1->CR |= ADC_CR_ADDIS;
-    	while (ADC1->CR & ADC_CR_ADDIS);
+    if (ADC1->CR & ADC_CR_ADSTART) {
+        ADC1->CR |= ADC_CR_ADSTP;
+        while (ADC1->CR & ADC_CR_ADSTP);
+    }
+    if (ADC1->CR & ADC_CR_ADEN) {
+        ADC1->CR |= ADC_CR_ADDIS;
+        while (ADC1->CR & ADC_CR_ADDIS);
     }
 }
 
@@ -254,7 +257,7 @@ void ADC_DMA_Init(uint16_t *buffer, uint16_t length, DMA_Mode mode)
 	else
 		DMA1_Channel1->CCR &= ~DMA_CCR_MINC;  // disable memory increment
 	DMA1_Channel1->CCR &= ~DMA_CCR_DIR; // dirrection is from Peripheral to Memory
-	DMA1->IFCR |= DMA_IFCR_CTCIF1;
+	DMA1->IFCR = DMA_IFCR_CTCIF1;
 }
 
 /**
@@ -289,11 +292,11 @@ void ADC_DMA_DeInit(void)
 
 
 // Only for NORMAL DMA mode
-void ADC_Start_DMA_Normal_Conversion(uint16_t length)
+void ADC_Start_DMA_Normal_Conversion()
 {
     DMA1_Channel1->CCR &= ~DMA_CCR_EN;
-
-    DMA1_Channel1->CNDTR = length;
+    // Использовать CNDTR, уже настроенный в ADC_DMA_Init
+    DMA1_Channel1->CNDTR = DMA_IFCR_CTCIF1;
 
     DMA1_Channel1->CCR |= DMA_CCR_EN;
 
@@ -338,7 +341,6 @@ uint8_t ADC_DMA_IsReady()
 
 void DMA1_Channel1_IRQHandler(void)
 {
-	// 6. Отсутствует сброс флага OVR в DMA-режиме
     if(DMA1->ISR & DMA_ISR_TCIF1)
     {
     	DMA1->IFCR =
