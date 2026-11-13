@@ -35,6 +35,31 @@ void configEngine()
 	    (127U << RTC_PRER_PREDIV_A_Pos) |
 	    (249U << RTC_PRER_PREDIV_S_Pos);
 
+	// set time
+	RTC->TR =
+	    (2U << RTC_TR_HT_Pos)  |
+	    (1U << RTC_TR_HU_Pos)  |
+	    (3U << RTC_TR_MNT_Pos) |
+	    (4U << RTC_TR_MNU_Pos) |
+	    (5U << RTC_TR_ST_Pos)  |
+	    (6U << RTC_TR_SU_Pos);
+
+	//set datum
+	RTC->DR =
+	    (2U << RTC_DR_YT_Pos)  |
+	    (6U << RTC_DR_YU_Pos)  |
+	    (5U << RTC_DR_WDU_Pos) |
+	    (1U << RTC_DR_MT_Pos)  |
+	    (1U << RTC_DR_MU_Pos)  |
+	    (1U << RTC_DR_DT_Pos)  |
+	    (3U << RTC_DR_DU_Pos);
+
+	//exit from initialisation
+	RTC->ICSR &= ~RTC_ICSR_INIT;
+
+	// disable RTC write
+	RTC->WPR = 0xFF;
+
 	/*RTC CONFIG END*/
 
 }
