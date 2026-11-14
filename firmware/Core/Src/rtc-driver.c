@@ -101,7 +101,52 @@ static bool RTC_ClockInit(void)
     return true;
 }
 
+static void RTC_EnterInitMode(void)
+{
+    RTC->WPR = 0xCAU;
+    RTC->WPR = 0x53U;
+
+    RTC->ICSR |= RTC_ICSR_INIT;
+
+    while ((RTC->ICSR & RTC_ICSR_INITF) == 0U)
+    {
+        // Ожидаем входа в режим инициализации
+    }
+}
+
+static void RTC_ExitInitMode(void)
+{
+    RTC->ICSR &= ~RTC_ICSR_INIT;
+
+    RTC->WPR = 0xFFU;
+
+    // Ждём обновления теневых регистров
+    while ((RTC->ICSR & RTC_ICSR_RSF) == 0U)
+    {
+    }
+}
 
 
+static uint8_t BCD_ToDecimal(uint8_t bcd)
+{
+    return ((bcd >> 4) * 10U) + (bcd & 0x0FU);
+}
 
+void RTC_GetTimeDate(RTC_DateTime *datetime)
+{
+
+	while ((RTC->ICSR & RTC_ICSR_RSF) == 0U){} // after exit from enit
+
+    uint32_t tr = RTC->TR;
+    uint32_t dr = RTC->DR;
+
+    datetime->hours = BCD_ToDecimal((tr >> RTC_TR_HU_Pos) & 0x3FU); // Hours
+    datetime->minutes = BCD_ToDecimal((tr >> RTC_TR_MNU_Pos) & 0x7FU); // minutes
+    datetime->seconds = BCD_ToDecimal((tr >> RTC_TR_SU_Pos) & 0x7FU); // seconds
+
+    datetime->day = BCD_ToDecimal((dr >> RTC_DR_DU_Pos) & 0x3FU); // day
+    datetime->month = BCD_ToDecimal((dr >> RTC_DR_MU_Pos) & 0x1FU); // month
+    datetime->year = BCD_ToDecimal((dr >> RTC_DR_YU_Pos) & 0xFFU); // year
+    datetime->weekday = (dr >> RTC_DR_WDU_Pos) & 0x07U; // weekdays - not BCD!
+}
 
