@@ -48,7 +48,7 @@ void mainEngine()
         // Здесь current_time содержит актуальные дату и время
     }
 	GPIOA->ODR ^= GPIO_ODR_OD4;
-	HAL_Delay(100);
+	HAL_Delay(1000);
 }
 
 

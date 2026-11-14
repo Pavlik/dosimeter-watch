@@ -78,6 +78,7 @@ static void RTC_Lock(void)
 static bool RTC_ClockInit(void)
 {
     RCC->APBENR1 |= RCC_APBENR1_PWREN; // enable PWR clock
+    RCC->APBENR1 |= RCC_APBENR1_RTCAPBEN; // enable RTC clock
     PWR->CR1 |= PWR_CR1_DBP; // enable access to Backup Domain
     RCC->CSR |= RCC_CSR_LSION; //LSI on
     while ((RCC->CSR & RCC_CSR_LSIRDY) == 0U){} // waiting for LSI ready
@@ -95,7 +96,6 @@ static bool RTC_ClockInit(void)
     	// another source already have choose
         return false;
     }
-
     RCC->BDCR |= RCC_BDCR_RTCEN; // enable RTC
 
     return true;
@@ -118,7 +118,7 @@ static void RTC_ExitInitMode(void)
 {
     RTC->ICSR &= ~RTC_ICSR_INIT;
 
-    RTC->WPR = 0xFFU;
+    RTC_Lock();
 
     // Ждём обновления теневых регистров
     while ((RTC->ICSR & RTC_ICSR_RSF) == 0U)
