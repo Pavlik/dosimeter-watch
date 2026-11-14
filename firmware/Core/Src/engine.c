@@ -41,6 +41,20 @@ void configEngine()
 
 }
 
+uint8_t set_time_flag = 1;
+RTC_DateTime new_time =
+{
+    .hours   = 1,
+    .minutes = 30,
+    .seconds = 0,
+
+    .day     = 15,
+    .month   = 11,
+    .year    = 2026,
+
+    .weekday = 7
+};
+
 void mainEngine()
 {
     if (RTC_GetDateTime(&current_time))
@@ -49,6 +63,11 @@ void mainEngine()
     }
 	GPIOA->ODR ^= GPIO_ODR_OD4;
 	HAL_Delay(1000);
+	if(set_time_flag == 1)
+	{
+		set_time_flag = 0;
+		RTC_SetDateTime(&new_time);
+	}
 }
 
 
