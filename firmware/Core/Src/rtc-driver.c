@@ -128,14 +128,6 @@ static void RTC_ExitInitMode(void)
 
 static void RTC_WriteCalendar(const RTC_DateTime *dt)
 {
-    // Асинхронный и синхронный предделители
-    RTC->PRER =
-        (127U << RTC_PRER_PREDIV_A_Pos) |
-        (249U << RTC_PRER_PREDIV_S_Pos);
-
-    // 24-часовой формат
-    RTC->CR &= ~RTC_CR_FMT;
-
     // Время
     RTC->TR =
         ((dt->hours / 10U)   << RTC_TR_HT_Pos)  |
@@ -168,6 +160,14 @@ bool RTC_Init(const RTC_DateTime *initial_time)
             return false;
 
         RTC_EnterInitMode();
+
+        // Асинхронный и синхронный предделители
+        RTC->PRER =
+            (127U << RTC_PRER_PREDIV_A_Pos) |
+            (249U << RTC_PRER_PREDIV_S_Pos);
+
+        // 24-часовой формат
+        RTC->CR &= ~RTC_CR_FMT; //!!
 
         RTC_WriteCalendar(initial_time);
 
