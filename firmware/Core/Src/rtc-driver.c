@@ -60,6 +60,23 @@ static bool RTC_IsValidDateTime(const RTC_DateTime *dt)
 }
 
 
+static void RTC_Unlock(void)
+{
+    RCC->APBENR1 |= RCC_APBENR1_PWREN;
+
+    PWR->CR1 |= PWR_CR1_DBP;
+
+    RTC->WPR = 0xCAU;
+    RTC->WPR = 0x53U;
+}
+
+static void RTC_Lock(void)
+{
+    RTC->WPR = 0xFFU;
+}
+
+
+
 
 bool RTC_ClockInit_LSI(void)
 {
