@@ -149,7 +149,7 @@ static void RTC_WriteCalendar(const RTC_DateTime *dt)
 }
 
 
-bool RTC_Init(const RTC_DateTime *initial_time)
+bool RTC_Init_LSI(const RTC_DateTime *initial_time)
 {
     if (!RTC_ClockInit())
         return false;
@@ -184,6 +184,24 @@ bool RTC_Init(const RTC_DateTime *initial_time)
 
     return true;
 }
+
+
+bool RTC_SetDateTime(const RTC_DateTime *datetime)
+{
+    if (!RTC_IsValidDateTime(datetime))
+        return false;
+
+    RTC_Unlock();
+
+    RTC_EnterInitMode();
+
+    RTC_WriteCalendar(datetime);
+
+    RTC_ExitInitMode();
+
+    return true;
+}
+
 
 
 //static uint8_t BCD_ToDecimal(uint8_t bcd)

@@ -35,8 +35,10 @@ typedef struct
  * не перезаписываются.
  */
 
-bool RTC_ClockInit_LSI(void);
+bool RTC_Init_LSI(const RTC_DateTime *initial_time);
 bool RTC_SetDateTime(const RTC_DateTime *datetime);
-void RTC_GetTimeDate(RTC_DateTime *datetime);
+//bool RTC_ClockInit_LSI(void);
+//bool RTC_SetDateTime(const RTC_DateTime *datetime);
+//void RTC_GetTimeDate(RTC_DateTime *datetime);
 
 #endif /* INC_RTC_DRIVER_H_ */
