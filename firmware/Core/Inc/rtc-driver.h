@@ -37,6 +37,7 @@ typedef struct
 
 bool RTC_Init_LSI(const RTC_DateTime *initial_time);
 bool RTC_SetDateTime(const RTC_DateTime *datetime);
+bool RTC_GetDateTime(RTC_DateTime *datetime);
 //bool RTC_ClockInit_LSI(void);
 //bool RTC_SetDateTime(const RTC_DateTime *datetime);
 //void RTC_GetTimeDate(RTC_DateTime *datetime);

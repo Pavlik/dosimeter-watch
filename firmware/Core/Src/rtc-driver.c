@@ -203,6 +203,59 @@ bool RTC_SetDateTime(const RTC_DateTime *datetime)
 }
 
 
+bool RTC_GetDateTime(RTC_DateTime *datetime)
+{
+    if (datetime == 0)
+        return false;
+
+    // Убеждаемся, что теневые регистры синхронизированы
+    if ((RTC->ICSR & RTC_ICSR_RSF) == 0U)
+        return false;
+
+    // Важно: сначала TR, затем DR
+    uint32_t tr = RTC->TR;
+    uint32_t dr = RTC->DR;
+
+    // Время
+    datetime->hours =
+        RTC_Decode2Digits(tr,
+                          RTC_TR_HT_Pos, 0x03U,
+                          RTC_TR_HU_Pos);
+
+    datetime->minutes =
+        RTC_Decode2Digits(tr,
+                          RTC_TR_MNT_Pos, 0x07U,
+                          RTC_TR_MNU_Pos);
+
+    datetime->seconds =
+        RTC_Decode2Digits(tr,
+                          RTC_TR_ST_Pos, 0x07U,
+                          RTC_TR_SU_Pos);
+
+    // Дата
+    datetime->day =
+        RTC_Decode2Digits(dr,
+                          RTC_DR_DT_Pos, 0x03U,
+                          RTC_DR_DU_Pos);
+
+    datetime->month =
+        RTC_Decode2Digits(dr,
+                          RTC_DR_MT_Pos, 0x01U,
+                          RTC_DR_MU_Pos);
+
+    datetime->year =
+        2000U + RTC_Decode2Digits(dr,
+                                  RTC_DR_YT_Pos, 0x0FU,
+                                  RTC_DR_YU_Pos);
+
+    datetime->weekday =
+        (dr >> RTC_DR_WDU_Pos) & 0x07U;
+
+    return true;
+}
+
+
+
 
 //static uint8_t BCD_ToDecimal(uint8_t bcd)
 //{
