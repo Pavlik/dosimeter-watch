@@ -18,6 +18,49 @@ static uint8_t RTC_Decode2Digits(uint32_t reg,
 }
 
 
+static bool RTC_IsLeapYear(uint16_t year)
+{
+    return ((year % 4U) == 0U);
+}
+
+static bool RTC_IsValidDateTime(const RTC_DateTime *dt)
+{
+    static const uint8_t days_in_month[] =
+    {
+        31, 28, 31, 30, 31, 30,
+        31, 31, 30, 31, 30, 31
+    };
+
+    if (dt == 0)
+        return false;
+
+    if (dt->hours > 23U ||
+        dt->minutes > 59U ||
+        dt->seconds > 59U)
+        return false;
+
+    if (dt->year < 2000U || dt->year > 2099U)
+        return false;
+
+    if (dt->month < 1U || dt->month > 12U)
+        return false;
+
+    if (dt->weekday < 1U || dt->weekday > 7U)
+        return false;
+
+    uint8_t max_days = days_in_month[dt->month - 1U];
+
+    if (dt->month == 2U && RTC_IsLeapYear(dt->year))
+        max_days = 29U;
+
+    if (dt->day < 1U || dt->day > max_days)
+        return false;
+
+    return true;
+}
+
+
+
 bool RTC_ClockInit_LSI(void)
 {
     RCC->APBENR1 |= RCC_APBENR1_PWREN; // enable PWR clock
