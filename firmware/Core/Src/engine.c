@@ -16,12 +16,12 @@ void configEngine()
 
 	/*RTC CONFIG START*/
 
-	if (!RTC_ClockInit_LSI())
-	{
-	    while (1)
-	    {
-	    }
-	}
+//	if (!RTC_ClockInit_LSI())
+//	{
+//	    while (1)
+//	    {
+//	    }
+//	}
 
 	// enable write in RTC
 	RTC->WPR = 0xCA;
