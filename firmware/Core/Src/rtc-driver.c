@@ -94,26 +94,26 @@ static bool RTC_ClockInit(void)
     RCC->APBENR1 |= RCC_APBENR1_PWREN; // enable PWR clock
     RCC->APBENR1 |= RCC_APBENR1_RTCAPBEN; // enable RTC clock
     PWR->CR1 |= PWR_CR1_DBP; // enable access to Backup Domain
-    RCC->CSR |= RCC_CSR_LSION; //LSI on
+
     //while ((RCC->CSR & RCC_CSR_LSIRDY) == 0U){} // waiting for LSI ready
-    if (!RTC_WaitForLSI())
-    {
-        return false;
-    }
 
     // checking source of RTC clock
     uint32_t rtc_source = RCC->BDCR & RCC_BDCR_RTCSEL;
+
+    if(rtc_source != 0 && rtc_source != (2U << RCC_BDCR_RTCSEL_Pos))
+    	return false;
+
+    RCC->CSR |= RCC_CSR_LSION; //LSI on
+    if (!RTC_WaitForLSI())
+        return false;
+
     if (rtc_source == 0U)
     {
     	// choose LSI
         RCC->BDCR &= ~RCC_BDCR_RTCSEL;
         RCC->BDCR |= (2U << RCC_BDCR_RTCSEL_Pos);
     }
-    else if (rtc_source != (2U << RCC_BDCR_RTCSEL_Pos))
-    {
-    	// another source already have choose
-        return false;
-    }
+
     RCC->BDCR |= RCC_BDCR_RTCEN; // enable RTC
 
     return true;

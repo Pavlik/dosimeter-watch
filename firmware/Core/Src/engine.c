@@ -8,14 +8,14 @@
 
 RTC_DateTime initial_time =
 {
-	    .hours   = 21,
-	    .minutes = 30,
+	    .hours   = 20,
+	    .minutes = 7,
 	    .seconds = 0,
 
-	    .day     = 14,
+	    .day     = 15,
 	    .month   = 11,
 	    .year    = 2026,
-		.weekday = 6
+		.weekday = 7
 };
 
 RTC_DateTime current_time;
