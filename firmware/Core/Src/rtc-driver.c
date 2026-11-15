@@ -75,13 +75,31 @@ static void RTC_Lock(void)
     RTC->WPR = 0xFFU;
 }
 
+static bool RTC_WaitForLSI(void)
+{
+    uint32_t timeout = RTC_TIMEOUT;
+
+    while ((RCC->CSR & RCC_CSR_LSIRDY) == 0U)
+    {
+        if (timeout-- == 0U)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 static bool RTC_ClockInit(void)
 {
     RCC->APBENR1 |= RCC_APBENR1_PWREN; // enable PWR clock
     RCC->APBENR1 |= RCC_APBENR1_RTCAPBEN; // enable RTC clock
     PWR->CR1 |= PWR_CR1_DBP; // enable access to Backup Domain
     RCC->CSR |= RCC_CSR_LSION; //LSI on
-    while ((RCC->CSR & RCC_CSR_LSIRDY) == 0U){} // waiting for LSI ready
+    //while ((RCC->CSR & RCC_CSR_LSIRDY) == 0U){} // waiting for LSI ready
+    if (!RTC_WaitForLSI())
+    {
+        return false;
+    }
 
     // checking source of RTC clock
     uint32_t rtc_source = RCC->BDCR & RCC_BDCR_RTCSEL;
@@ -103,6 +121,8 @@ static bool RTC_ClockInit(void)
 
 static void RTC_EnterInitMode(void)
 {
+	RTC_Unlock();
+
     RTC->ICSR |= RTC_ICSR_INIT;
 
     while ((RTC->ICSR & RTC_ICSR_INITF) == 0U)
@@ -187,8 +207,6 @@ bool RTC_SetDateTime(const RTC_DateTime *datetime)
 {
     if (!RTC_IsValidDateTime(datetime))
         return false;
-
-    RTC_Unlock();
 
     RTC_EnterInitMode();
 

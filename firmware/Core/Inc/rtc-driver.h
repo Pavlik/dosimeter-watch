@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define RTC_TIMEOUT 1000000U
+
 typedef struct
 {
     uint8_t hours;
