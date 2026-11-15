@@ -121,25 +121,45 @@ static bool RTC_ClockInit(void)
     return true;
 }
 
-static void RTC_EnterInitMode(void)
+static bool RTC_EnterInitMode(void)
 {
 	RTC_Unlock();
 
     RTC->ICSR |= RTC_ICSR_INIT;
 
     if(!RTC_WaitForBits(&RTC->ICSR, RTC_ICSR_INITF, RTC_ICSR_INITF)) // Ожидаем входа в режим инициализации
+    {
+    	RTC_Lock();
     	return false;
+    }
+    return true;
 }
 
+/*Ещё один нюанс: этот подход предполагает, что BYPSHAD = 0,
+ * то есть теневые регистры не отключены.
+ * При BYPSHAD = 1 ждать установки RSF не нужно — этот флаг аппаратно удерживается в нуле.
+ */
+//static bool RTC_ExitInitMode(void)
+//{
+//    RTC->ICSR &= ~RTC_ICSR_INIT;
+//
+//    RTC_Lock();
+//
+//    // Ждём обновления теневых регистров
+//    if(!RTC_WaitForBits(&RTC->ICSR, RTC_ICSR_RSF, RTC_ICSR_RSF))
+//    	return false;
+//    return true;
+//}
+static bool RTC_WaitForSync(void)
+{
+    return RTC_WaitForBits(&RTC->ICSR,
+                           RTC_ICSR_RSF,
+                           RTC_ICSR_RSF);
+}
 static void RTC_ExitInitMode(void)
 {
     RTC->ICSR &= ~RTC_ICSR_INIT;
-
     RTC_Lock();
-
-    // Ждём обновления теневых регистров
-    if(!RTC_WaitForBits(&RTC->ICSR, RTC_ICSR_RSF, RTC_ICSR_RSF))
-    	return false;
 }
 
 static void RTC_WriteCalendar(const RTC_DateTime *dt)
