@@ -47,10 +47,11 @@ void configEngine()
 	uart_send_init();
 
 	/*RTC CONFIG START*/
-    if (!RTC_Init_LSI(&initial_time))
+	RTC_Status rtc_status = RTC_Init_LSI(&initial_time);
+
+    if (rtc_status != RTC_OK)
     {
-        // Ошибка инициализации RTC
-        while (1) {}
+        // обработка ошибки
     }
 
 	/*RTC CONFIG END*/

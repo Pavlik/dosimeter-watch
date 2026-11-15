@@ -91,7 +91,7 @@ static void RTC_Lock(void)
     RTC->WPR = 0xFFU;
 }
 
-static bool RTC_ClockInit(void)
+static RTC_Status RTC_ClockInit(void)
 {
     RCC->APBENR1 |= RCC_APBENR1_PWREN; // enable PWR clock
     RCC->APBENR1 |= RCC_APBENR1_RTCAPBEN; // enable RTC clock
@@ -103,11 +103,11 @@ static bool RTC_ClockInit(void)
     uint32_t rtc_source = RCC->BDCR & RCC_BDCR_RTCSEL;
 
     if(rtc_source != 0 && rtc_source != (2U << RCC_BDCR_RTCSEL_Pos))
-    	return false;
+    	return RTC_ERROR_CLOCK;
 
     RCC->CSR |= RCC_CSR_LSION; //LSI on
     if (!RTC_WaitForBits(&RCC->CSR, RCC_CSR_LSIRDY, RCC_CSR_LSIRDY))
-        return false;
+        return RTC_ERROR_CLOCK;
 
     if (rtc_source == 0U)
     {
@@ -118,10 +118,10 @@ static bool RTC_ClockInit(void)
 
     RCC->BDCR |= RCC_BDCR_RTCEN; // enable RTC
 
-    return true;
+    return RTC_OK;
 }
 
-static bool RTC_EnterInitMode(void)
+static RTC_Status RTC_EnterInitMode(void)
 {
 	RTC_Unlock();
 
@@ -130,9 +130,9 @@ static bool RTC_EnterInitMode(void)
     if(!RTC_WaitForBits(&RTC->ICSR, RTC_ICSR_INITF, RTC_ICSR_INITF)) // Ожидаем входа в режим инициализации
     {
     	RTC_Lock();
-    	return false;
+    	return RTC_ERROR_INIT_MODE;
     }
-    return true;
+    return RTC_OK;
 }
 
 /*Ещё один нюанс: этот подход предполагает, что BYPSHAD = 0,
@@ -150,11 +150,15 @@ static bool RTC_EnterInitMode(void)
 //    	return false;
 //    return true;
 //}
-static bool RTC_WaitForSync(void)
+static RTC_Status RTC_WaitForSync(void)
 {
-    return RTC_WaitForBits(&RTC->ICSR,
+	if(!RTC_WaitForBits(&RTC->ICSR,
                            RTC_ICSR_RSF,
-                           RTC_ICSR_RSF);
+                           RTC_ICSR_RSF))
+	{
+		return RTC_ERROR_SYNC_TIMEOUT;
+	}
+	return RTC_OK;
 }
 static void RTC_ExitInitMode(void)
 {
@@ -185,17 +189,21 @@ static void RTC_WriteCalendar(const RTC_DateTime *dt)
 }
 
 
-bool RTC_Init_LSI(const RTC_DateTime *initial_time)
+RTC_Status RTC_Init_LSI(const RTC_DateTime *initial_time)
 {
-    if (!RTC_ClockInit())
-        return false;
+	RTC_Status status = RTC_ClockInit();
+
+    if (status != RTC_OK)
+        return status;
 
     if ((RTC->ICSR & RTC_ICSR_INITS) == 0U)
     {
         if (!RTC_IsValidDateTime(initial_time))
-            return false;
+            return RTC_ERROR_INVALID_ARG;
 
-        RTC_EnterInitMode();
+        status = RTC_EnterInitMode();
+        if (status != RTC_OK)
+             return status;
 
         // Асинхронный и синхронный предделители
         RTC->PRER =
@@ -208,43 +216,54 @@ bool RTC_Init_LSI(const RTC_DateTime *initial_time)
         RTC_WriteCalendar(initial_time);
 
         RTC_ExitInitMode();
+        status = RTC_WaitForSync();
+        if (status != RTC_OK)
+            return status;
     }
     else
     {
         // После системного сброса теневые регистры
         // нужно синхронизировать с календарём
-
-        if(!RTC_WaitForBits(&RTC->ICSR, RTC_ICSR_RSF, RTC_ICSR_RSF))
-        	return false;
+    	status = RTC_WaitForSync();
+        if (status != RTC_OK)
+            return status;
     }
 
-    return true;
+    return RTC_OK;
 }
 
 
-bool RTC_SetDateTime(const RTC_DateTime *datetime)
+RTC_Status RTC_SetDateTime(const RTC_DateTime *datetime)
 {
     if (!RTC_IsValidDateTime(datetime))
-        return false;
+        return RTC_ERROR_INVALID_ARG;
 
-    RTC_EnterInitMode();
+    RTC_Status status = RTC_EnterInitMode();
+    if (status != RTC_OK)
+        return status;
 
     RTC_WriteCalendar(datetime);
 
     RTC_ExitInitMode();
+    status = RTC_WaitForSync();
 
-    return true;
+    if (status != RTC_OK)
+        return status;
+
+    return RTC_OK;
 }
 
 
-bool RTC_GetDateTime(RTC_DateTime *datetime)
+RTC_Status RTC_GetDateTime(RTC_DateTime *datetime)
 {
     if (datetime == 0)
-        return false;
+        return RTC_ERROR_INVALID_ARG;
 
     // Убеждаемся, что теневые регистры синхронизированы
-    if ((RTC->ICSR & RTC_ICSR_RSF) == 0U)
-        return false;
+    RTC_Status status = RTC_WaitForSync();
+
+    if (status != RTC_OK)
+        return status;
 
     // Важно: сначала TR, затем DR
     uint32_t tr = RTC->TR;
@@ -285,7 +304,7 @@ bool RTC_GetDateTime(RTC_DateTime *datetime)
     datetime->weekday =
         (dr >> RTC_DR_WDU_Pos) & 0x07U;
 
-    return true;
+    return RTC_OK;
 }
 
 

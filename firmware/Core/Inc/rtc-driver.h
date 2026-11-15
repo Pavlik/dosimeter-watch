@@ -27,6 +27,15 @@ typedef struct
 
 } RTC_DateTime;
 
+typedef enum
+{
+    RTC_OK = 0,
+    RTC_ERROR_CLOCK,
+    RTC_ERROR_INIT_MODE,
+    RTC_ERROR_SYNC_TIMEOUT,
+    RTC_ERROR_INVALID_ARG
+} RTC_Status;
+
 /*
  * Инициализация RTC от LSI.
  *
@@ -37,9 +46,9 @@ typedef struct
  * не перезаписываются.
  */
 
-bool RTC_Init_LSI(const RTC_DateTime *initial_time);
-bool RTC_SetDateTime(const RTC_DateTime *datetime);
-bool RTC_GetDateTime(RTC_DateTime *datetime);
+RTC_Status RTC_Init_LSI(const RTC_DateTime *initial_time);
+RTC_Status RTC_SetDateTime(const RTC_DateTime *datetime);
+RTC_Status RTC_GetDateTime(RTC_DateTime *datetime);
 //bool RTC_ClockInit_LSI(void);
 //bool RTC_SetDateTime(const RTC_DateTime *datetime);
 //void RTC_GetTimeDate(RTC_DateTime *datetime);
