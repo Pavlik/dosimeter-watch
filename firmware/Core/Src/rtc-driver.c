@@ -6,6 +6,22 @@
  */
 #include "rtc-driver.h"
 
+static bool RTC_WaitForBits(volatile uint32_t *reg, uint32_t mask, uint32_t expected)
+{
+	uint32_t timeout = RTC_TIMEOUT;
+    while ((*reg & mask) != expected)
+    {
+        if (timeout == 0U)
+        {
+            return false;
+        }
+
+        timeout--;
+    }
+
+    return true;
+}
+
 static uint8_t RTC_Decode2Digits(uint32_t reg,
                                  uint32_t tens_pos,
                                  uint32_t tens_mask,
@@ -75,20 +91,6 @@ static void RTC_Lock(void)
     RTC->WPR = 0xFFU;
 }
 
-static bool RTC_WaitForLSI(void)
-{
-    uint32_t timeout = RTC_TIMEOUT;
-
-    while ((RCC->CSR & RCC_CSR_LSIRDY) == 0U)
-    {
-        if (timeout-- == 0U)
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
 static bool RTC_ClockInit(void)
 {
     RCC->APBENR1 |= RCC_APBENR1_PWREN; // enable PWR clock
@@ -104,7 +106,7 @@ static bool RTC_ClockInit(void)
     	return false;
 
     RCC->CSR |= RCC_CSR_LSION; //LSI on
-    if (!RTC_WaitForLSI())
+    if (!RTC_WaitForBits(&RCC->CSR, RCC_CSR_LSIRDY, RCC_CSR_LSIRDY))
         return false;
 
     if (rtc_source == 0U)
@@ -125,10 +127,8 @@ static void RTC_EnterInitMode(void)
 
     RTC->ICSR |= RTC_ICSR_INIT;
 
-    while ((RTC->ICSR & RTC_ICSR_INITF) == 0U)
-    {
-        // Ожидаем входа в режим инициализации
-    }
+    if(!RTC_WaitForBits(&RTC->ICSR, RTC_ICSR_INITF, RTC_ICSR_INITF)) // Ожидаем входа в режим инициализации
+    	return false;
 }
 
 static void RTC_ExitInitMode(void)
@@ -138,9 +138,8 @@ static void RTC_ExitInitMode(void)
     RTC_Lock();
 
     // Ждём обновления теневых регистров
-    while ((RTC->ICSR & RTC_ICSR_RSF) == 0U)
-    {
-    }
+    if(!RTC_WaitForBits(&RTC->ICSR, RTC_ICSR_RSF, RTC_ICSR_RSF))
+    	return false;
 }
 
 static void RTC_WriteCalendar(const RTC_DateTime *dt)
@@ -193,10 +192,10 @@ bool RTC_Init_LSI(const RTC_DateTime *initial_time)
     else
     {
         // После системного сброса теневые регистры
-        // нужно синхронизировать с календарём.
-        while ((RTC->ICSR & RTC_ICSR_RSF) == 0U)
-        {
-        }
+        // нужно синхронизировать с календарём
+
+        if(!RTC_WaitForBits(&RTC->ICSR, RTC_ICSR_RSF, RTC_ICSR_RSF))
+        	return false;
     }
 
     return true;
