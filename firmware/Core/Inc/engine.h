@@ -9,6 +9,7 @@
 #define INC_ENGINE_H_
 
 #include "stm32g0xx.h"
+#include "uart_transmit.h"
 #include "rtc-driver.h"
 
 void configEngine();
