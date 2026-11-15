@@ -103,9 +103,6 @@ static bool RTC_ClockInit(void)
 
 static void RTC_EnterInitMode(void)
 {
-    RTC->WPR = 0xCAU;
-    RTC->WPR = 0x53U;
-
     RTC->ICSR |= RTC_ICSR_INIT;
 
     while ((RTC->ICSR & RTC_ICSR_INITF) == 0U)
