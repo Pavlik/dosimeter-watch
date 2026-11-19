@@ -16,6 +16,17 @@
 
 #include "ring_buffer.h"
 
+typedef struct
+{
+    USART_TypeDef *Instance;
+
+    uint8_t *rx_buf;
+    uint16_t rx_size;
+
+    volatile uint16_t head;
+    volatile uint16_t tail;
+} UART_Handle_t;
+
 void uart_send_init(void);
 bool uart_send_byte_it(uint8_t byte);
 void uart_send_string_it(const char *str);

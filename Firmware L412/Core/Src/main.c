@@ -21,8 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "uart_transmit.h"
-#include "adc_l412.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,7 +42,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-volatile uint8_t tim16_it_flag = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -100,22 +99,6 @@ int main(void)
 
  	/*GPIO SYSTEM LED CONFIG END*/
 
- 	/*TIM16 CONFIG START*/
-
- 	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
-
- 	TIM16->PSC = 24000-1;
- 	TIM16->ARR = 1000-1;
- 	TIM16->CNT = 0;
-
- 	TIM16->DIER |= TIM_DIER_UIE;
- 	NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 0);
- 	NVIC_EnableIRQ(TIM1_UP_TIM16_IRQn);
-
- 	TIM16->CR1 |= TIM_CR1_CEN;
-
- 	/*TIM16 CONFIG END*/
-
  	/*GPIO UART RX/TX PA9-PA10 CONFIG START*/
 
  	 GPIOA->MODER &= ~GPIO_MODER_MODE10;
@@ -127,41 +110,26 @@ int main(void)
 
  	/*GPIO UART RX/TX PA9-PA10 CONFIG END*/
 
- 	/*UART1 CONFIG START*/
+// 	/*TIM16 CONFIG START*/
+//
+// 	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
+//
+// 	TIM16->PSC = 24000-1;
+// 	TIM16->ARR = 1000-1;
+// 	TIM16->CNT = 0;
+// 	TIM16->EGR = TIM_EGR_UG;
+// 	TIM16->SR = ~TIM_SR_UIF;
+// 	TIM16->DIER |= TIM_DIER_UIE;
+// 	NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 0);
+// 	NVIC_EnableIRQ(TIM1_UP_TIM16_IRQn);
+//
+// 	TIM16->CR1 |= TIM_CR1_CEN;
+//
+// 	/*TIM16 CONFIG END*/
 
- 	 RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
- 	 RCC->CCIPR &= ~RCC_CCIPR_USART1SEL;
- 	 USART1->CR1 &= ~USART_CR1_UE;
-
- 	 /*Baudrate = 115200* BRR = 24000000 / 115200 = 208.33*/
-
- 	 USART1->BRR = 208;
-
- 	 USART1->CR1 = USART_CR1_TE | USART_CR1_RE; // ENABLE UART1 RX/TX
- 	 USART1->CR1 |= USART_CR1_UE; // ENABLE UART1
 
 
- 	ADC_Init();
  	uart_send_init();
-
-
-
- 	/*UART1 CONFIG END*/
-
- 	char buf[32] = {0,};
- 	uint16_t adc_ch5_value = 0;
-
- 	HAL_Delay(1000);
- 	snprintf(buf, sizeof(buf),  "CR   = %08lX\r\n", ADC1->CR);
- 	uart_send_string_it(buf);
- 	snprintf(buf, sizeof(buf),  "ISR  = %08lX\r\n", ADC1->ISR);
- 	uart_send_string_it(buf);
- 	snprintf(buf, sizeof(buf),  "CFGR = %08lX\r\n", ADC1->CFGR);
- 	uart_send_string_it(buf);
- 	snprintf(buf, sizeof(buf),  "SQR1 = %08lX\r\n", ADC1->SQR1);
- 	uart_send_string_it(buf);
-
- 	uint8_t adc_buf[2];
 
 
   /* USER CODE END 2 */
@@ -171,49 +139,8 @@ int main(void)
   while (1)
   {
 
-	  if(tim16_it_flag)
-	  {
-		  static uint8_t adc_busy = 0;
-		  if (!adc_busy)
-		  {
-		      //ADC_SelectChannel(ADC_CH5);
-			  ADC_SetSequenceLength(1);
-			  ADC_SetSequenceChannel(1, ADC_CH5);
 
-		      ADC_SetSampleTime(ADC_CH5, ADC_SAMPLE_640_5CYCLES);
-		      if(!ADC_IsBusy())
-		    	  ADC_Start();
 
-		      adc_busy = 1;
-		  }
-		  else
-		  {
-		      if (ADC_IsConversionComplete())
-		      {
-		    	  adc_ch5_value = ADC_GetValue();
-
-		          adc_busy = 0;
-				  tim16_it_flag = 0;
-		      }
-		  }
-
-//		  uart_send_byte_it(adc_ch5_value >> 8);
-//		  uart_send_byte_it(adc_ch5_value & 0x00FF);
-
-		  adc_buf[0] =(uint8_t)(adc_ch5_value >> 8);
-		  adc_buf[1] =(uint8_t)(adc_ch5_value & 0x00FF);
-		  uart_send_data_it(adc_buf, 2);
-		 	snprintf(buf, sizeof(buf),  "ADC = %d\r\n", adc_ch5_value);
-		 	uart_send_string_it(buf);
-		  //uart_send_byte_it('\n');
-	  }
-//	  snprintf(buf, sizeof(buf), "Hello UART1! \n");
-//	  uart_send_string_it(buf);
-	  //uart_send_byte_it(0x58);
-	  //uart_send_byte_it('\n');
-
-	  //GPIOA->ODR ^= GPIO_ODR_OD3;
-	  //HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -287,18 +214,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void TIM1_UP_TIM16_IRQHandler(void)
 
-{
-    if (TIM16->SR & TIM_SR_UIF) {
-        TIM16->SR &= ~TIM_SR_UIF; // Сброс флага
-
-        tim16_it_flag = 1;
-
-        GPIOA->ODR ^= GPIO_ODR_OD3;// Ваш код
-
-    }
-}
 /* USER CODE END 4 */
 
 /**

@@ -10,6 +10,38 @@
 
 static RingBuffer uart_tx;
 
+void USART_Init(UART_Handle_t *huart)
+{
+	if(huart->Instance == USART1)
+	{
+		RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+	}
+	else if(huart->Instance == USART2)
+		RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
+	else if(huart->Instance == LPUART1)
+		RCC->APB1ENR2 |= RCC_APB1ENR2_LPUART1EN;
+	else
+		return;
+
+	/*USART1 CONFIG START*/
+
+	 RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+	 RCC->CCIPR &= ~RCC_CCIPR_USART1SEL;
+	 USART1->CR1 &= ~USART_CR1_UE;
+
+	 /*Baudrate = 115200* BRR = 24000000 / 115200 = 208.33*/
+
+	 USART1->BRR = 208;
+
+	 USART1->CR1 = USART_CR1_TE | USART_CR1_RE; // ENABLE UART1 RX/TX
+	 USART1->CR1 |= USART_CR1_UE; // ENABLE UART1
+
+
+	/*USART1 CONFIG END*/
+}
+
+
+
 void uart_send_init(void)
 {
 	uart_tx.head = 0;
