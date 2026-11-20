@@ -37,6 +37,9 @@ typedef struct
 
 void USART_Init(UART_Handle_t *huart);
 void LPUART_Init(UART_Handle_t *huart);
+
+bool UART_SendByte(UART_Handle_t *huart, uint8_t data, uint32_t timeout);
+bool UART_RecvByte(UART_Handle_t *huart, uint8_t *data, uint32_t timeout);
 //void uart_send_init(void);
 bool uart_send_byte_it(uint8_t byte);
 void uart_send_string_it(const char *str);

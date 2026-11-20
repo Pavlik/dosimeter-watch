@@ -65,6 +65,35 @@ void LPUART_Init(UART_Handle_t *huart)
 						 | USART_CR1_UE; // ENABLE UART
 }
 
+//returns true if success/ returns false if timeout
+bool UART_SendByte(UART_Handle_t *huart, uint8_t data, uint32_t timeout)
+{
+    if (!huart || !huart->Instance) return false;
+
+    // Wait until TXE is set (send register is empty)
+    while (!(huart->Instance->ISR & USART_ISR_TXE))
+    {
+        if (timeout-- == 0) return false;
+    }
+    // send byte
+    huart->Instance->TDR = data;
+    return true;
+}
+
+// returns true if success (byte received), returns false if timeout
+bool UART_RecvByte(UART_Handle_t *huart, uint8_t *data, uint32_t timeout)
+{
+    if (!huart || !huart->Instance || !data) return false;
+
+    // wait until RXNE is set (receive register is not empty)
+    while (!(huart->Instance->ISR & USART_ISR_RXNE))
+    {
+        if (timeout-- == 0) return false;
+    }
+    //get byte
+    *data = (uint8_t)(huart->Instance->RDR & 0xFF);
+    return true;
+}
 
 //void uart_send_init(void)
 //{
