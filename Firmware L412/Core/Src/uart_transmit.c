@@ -8,7 +8,7 @@
 
 #include "uart_transmit.h"
 
-static RingBuffer uart_tx;
+//static RingBuffer uart_tx;
 
 void USART_Init(UART_Handle_t *huart)
 {
@@ -92,6 +92,31 @@ bool UART_RecvByte(UART_Handle_t *huart, uint8_t *data, uint32_t timeout)
     }
     //get byte
     *data = (uint8_t)(huart->Instance->RDR & 0xFF);
+    return true;
+}
+//returns true if success/ returns false if timeout
+bool UART_SendBuf(UART_Handle_t *huart, const uint8_t *buf, uint16_t len, uint32_t timeout_per_byte)
+{
+    if (!huart || !huart->Instance || !buf || len == 0) return false;
+
+    for (uint16_t i = 0; i < len; i++)
+    {
+        if (!UART_SendByte(huart, buf[i], timeout_per_byte))
+            return false;  // timeout at a certain byte
+    }
+    return true;
+}
+// returns true if success (buf received), returns false if timeout
+bool UART_RecvBuf(UART_Handle_t *huart, uint8_t *buf, uint16_t len, uint32_t timeout_per_byte)
+{
+    if (!huart || !huart->Instance || !buf || len == 0) return false;
+
+    for (uint16_t i = 0; i < len; i++)
+    {
+        if (!UART_RecvByte(huart, &buf[i], timeout_per_byte))
+            return false;
+    }
+
     return true;
 }
 
