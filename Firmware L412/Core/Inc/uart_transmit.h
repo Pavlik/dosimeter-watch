@@ -11,6 +11,7 @@
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx.h"
 
+#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -23,11 +24,20 @@ typedef struct
     uint8_t *rx_buf;
     uint16_t rx_size;
 
+    uint32_t baudrate;   // speed
+    uint32_t pclk;       // bus clock APB2 for USART1, APB1 for USART2/3 и LPUART1
+    uint8_t word_length;   // 7/8/9
+    uint8_t parity;        // 0=None, 1=Even, 2=Odd
+    uint8_t stop_bits;     // 1 or 2
+
     volatile uint16_t head;
     volatile uint16_t tail;
 } UART_Handle_t;
 
-void uart_send_init(void);
+
+void USART_Init(UART_Handle_t *huart);
+void LPUART_Init(UART_Handle_t *huart);
+//void uart_send_init(void);
 bool uart_send_byte_it(uint8_t byte);
 void uart_send_string_it(const char *str);
 void uart_send_data_it(uint8_t *data, uint16_t len);

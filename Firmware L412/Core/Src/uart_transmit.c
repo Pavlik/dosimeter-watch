@@ -12,94 +12,103 @@ static RingBuffer uart_tx;
 
 void USART_Init(UART_Handle_t *huart)
 {
+	if (!huart || !huart->Instance || !huart->baudrate || !huart->pclk) return;
+	//clock
 	if(huart->Instance == USART1)
 	{
 		RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 	}
 	else if(huart->Instance == USART2)
 		RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
-	else if(huart->Instance == LPUART1)
-		RCC->APB1ENR2 |= RCC_APB1ENR2_LPUART1EN;
 	else
 		return;
-	__DSB();
 
-	/*USART1 CONFIG START*/
-	 //RCC->CCIPR &= ~RCC_CCIPR_USART1SEL;
-	 USART1->CR1 &= ~USART_CR1_UE;
+    USART_TypeDef *u = huart->Instance;
 
+    u->CR1 = 0;  // reset, UE=0
+    u->CR2 = 0;  // 1 stop bit, without CLKEN and other
+    u->CR3 = 0;
 
+    u->BRR = (huart->pclk + huart->baudrate / 2) / huart->baudrate;
+	/*
+	 * RCC->CCIPR &= ~RCC_CCIPR_USART1SEL; // CCIPR - choosing of USART clock (PCLK/SYSCLK/HSI16/LSE)
+	 * default CCIPR == 00 means USART clk from PCLK
+	 *
+	 */
 
-	 /*Baudrate = 115200* BRR = 24000000 / 115200 = 208.33*/
-
-	 USART1->BRR = 208;
-
-	 USART1->CR1 = USART_CR1_TE | USART_CR1_RE; // ENABLE UART1 RX/TX
-	 USART1->CR1 |= USART_CR1_UE; // ENABLE UART1
-
-
-	/*USART1 CONFIG END*/
+	huart->Instance->CR1 = USART_CR1_TE // ENABLE UART TX
+						 | USART_CR1_RE // ENABLE UART RX
+						 | USART_CR1_UE; // ENABLE UART
 }
 
-
-
-void uart_send_init(void)
+void LPUART_Init(UART_Handle_t *huart)
 {
-	uart_tx.head = 0;
-	uart_tx.tail = 0;
+	if (!huart || !huart->Instance || !huart->baudrate || !huart->pclk) return;
+	//clock
+	RCC->APB1ENR2 |= RCC_APB1ENR2_LPUART1EN;
 
-    NVIC_SetPriority(USART1_IRQn, 1);
-    NVIC_EnableIRQ(USART1_IRQn);
-}
+    USART_TypeDef *u = huart->Instance;
 
-bool uart_send_byte_it(uint8_t byte)
-{
-    if (!ring_buffer_put(&uart_tx, byte))
-        return false;
-    USART1->CR1 |= USART_CR1_TXEIE;
-    return true;
-}
+    u->CR1 = 0;  // reset, UE=0
+    u->CR2 = 0;  // 1 stop bit, without CLKEN and other
+    u->CR3 = 0;
 
-void uart_send_data_it(uint8_t *data, uint16_t len)
-{
-    while(len--)
-    {
-        uart_send_byte_it(*data++);
-    }
-}
+    u->BRR = 256 * huart->pclk / huart->baudrate;
+	/*
+	 * RCC->CCIPR &= ~RCC_CCIPR_USART1SEL; // CCIPR - choosing of USART clock (PCLK/SYSCLK/HSI16/LSE)
+	 * default CCIPR == 00 means USART clk from PCLK
+	 *
+	 */
 
-
-void uart_send_string_it(const char *str)
-{
-    while (*str)
-    {
-    	if(!uart_send_byte_it(*str++))
-    		break;
-    }
-}
-
-void USART1_IRQHandler(void)
-{
-    if (USART1->ISR & USART_ISR_TXE)
-    {
-        uint8_t data;
-        if (ring_buffer_get(&uart_tx, &data))
-            USART1->TDR = data;
-        else
-            USART1->CR1 &= ~USART_CR1_TXEIE;
-    }
+	huart->Instance->CR1 = USART_CR1_TE // ENABLE UART TX
+						 | USART_CR1_RE // ENABLE UART RX
+						 | USART_CR1_UE; // ENABLE UART
 }
 
 
-
-//void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+//void uart_send_init(void)
 //{
-//	if(huart->Instance != USART1)
-//		return;
-//	if(ring_buffer_get(&tx_usart, &tx_current))
-//	{
-//		if(HAL_UART_Transmit_IT(&huart1, &tx_current, 1) != HAL_OK)
-//			tx_active = false;
-//	}
-//	else tx_active = false;
+//	uart_tx.head = 0;
+//	uart_tx.tail = 0;
+//
+//    NVIC_SetPriority(USART1_IRQn, 1);
+//    NVIC_EnableIRQ(USART1_IRQn);
+//}
+
+//bool uart_send_byte_it(uint8_t byte)
+//{
+//    if (!ring_buffer_put(&uart_tx, byte))
+//        return false;
+//    USART1->CR1 |= USART_CR1_TXEIE;
+//    return true;
+//}
+//
+//void uart_send_data_it(uint8_t *data, uint16_t len)
+//{
+//    while(len--)
+//    {
+//        uart_send_byte_it(*data++);
+//    }
+//}
+//
+//
+//void uart_send_string_it(const char *str)
+//{
+//    while (*str)
+//    {
+//    	if(!uart_send_byte_it(*str++))
+//    		break;
+//    }
+//}
+//
+//void USART1_IRQHandler(void)
+//{
+//    if (USART1->ISR & USART_ISR_TXE)
+//    {
+//        uint8_t data;
+//        if (ring_buffer_get(&uart_tx, &data))
+//            USART1->TDR = data;
+//        else
+//            USART1->CR1 &= ~USART_CR1_TXEIE;
+//    }
 //}

@@ -129,8 +129,6 @@ int main(void)
 
 
 
- 	uart_send_init();
-
 
   /* USER CODE END 2 */
 
