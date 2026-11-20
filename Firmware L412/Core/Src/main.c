@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "uart_test.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -126,7 +126,7 @@ int main(void)
 // 	TIM16->CR1 |= TIM_CR1_CEN;
 //
 // 	/*TIM16 CONFIG END*/
-
+ 	USART_Init_Test();
 
 
 
@@ -136,7 +136,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+	  USART_While_Test();
 
 
     /* USER CODE END WHILE */

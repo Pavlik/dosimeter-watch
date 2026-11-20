@@ -6,7 +6,7 @@
  */
 
 
-#include "uart_transmit.h"
+#include <uart_driver.h>
 
 //static RingBuffer uart_tx;
 

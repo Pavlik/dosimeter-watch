@@ -5,8 +5,8 @@
  *      Author: Pavel
  */
 
-#ifndef INC_UART_TRANSMIT_H_
-#define INC_UART_TRANSMIT_H_
+#ifndef INC_UART_DRIVER_H_
+#define INC_UART_DRIVER_H_
 
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx.h"
@@ -49,4 +49,4 @@ bool UART_RecvBuf(UART_Handle_t *huart, uint8_t *buf, uint16_t len, uint32_t tim
 
 
 
-#endif /* INC_UART_TRANSMIT_H_ */
+#endif /* INC_UART_DRIVER_H_ */
