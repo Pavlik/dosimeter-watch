@@ -17,8 +17,8 @@
 typedef struct
 {
     uint8_t buffer[BUFFER_SIZE];
-    uint8_t head;
-    uint8_t tail;
+    volatile uint16_t head;
+    volatile uint16_t tail;
 } RingBuffer;
 
 uint8_t ring_buffer_next_index(uint8_t index);

@@ -21,8 +21,11 @@ typedef struct
 {
     USART_TypeDef *Instance;
 
-    uint8_t *rx_buf;
-    uint16_t rx_size;
+//    uint8_t *rx_buf;
+//    uint16_t rx_size;
+//    uint8_t *tx_buf;
+//    uint16_t tx_size;
+
 
     uint32_t baudrate;   // speed
     uint32_t pclk;       // bus clock APB2 for USART1, APB1 for USART2/3 и LPUART1
@@ -30,13 +33,16 @@ typedef struct
     uint8_t parity;        // 0=None, 1=Even, 2=Odd
     uint8_t stop_bits;     // 1 or 2
 
-    volatile uint16_t head;
-    volatile uint16_t tail;
+    RingBuffer rx_buffer;
+    RingBuffer tx_buffer;
+//    volatile uint16_t head;
+//    volatile uint16_t tail;
 } UART_Handle_t;
 
 
 void USART_Init(UART_Handle_t *huart);
 void LPUART_Init(UART_Handle_t *huart);
+void USART_EnableIRQ(UART_Handle_t *huart, uint8_t irqn_priority);
 
 bool UART_SendByte(UART_Handle_t *huart, uint8_t data, uint32_t timeout);
 bool UART_RecvByte(UART_Handle_t *huart, uint8_t *data, uint32_t timeout);

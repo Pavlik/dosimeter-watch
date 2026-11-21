@@ -7,15 +7,11 @@
 
 #include "uart_test.h"
 
-static uint8_t rx_buf[32];
-
 UART_Handle_t uart1 =
 {
 	.Instance = USART1,
 	.baudrate = 115200,
 	.pclk = 24000000U,
-	.rx_buf = rx_buf,
-	.rx_size = sizeof(rx_buf)
 };
 static uint8_t ch;
 

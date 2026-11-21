@@ -8,7 +8,11 @@
 
 #include <uart_driver.h>
 
-//static RingBuffer uart_tx;
+/* ====== Глобальные указатели для ISR ====== */
+
+static UART_Handle_t *g_usart1 = NULL;
+static UART_Handle_t *g_usart2 = NULL;
+static UART_Handle_t *g_lpuart1 = NULL;
 
 /*
  * @brief Initializes USART according to the fields of the structure
@@ -147,49 +151,121 @@ bool UART_RecvBuf(UART_Handle_t *huart, uint8_t *buf, uint16_t len, uint32_t tim
     return true;
 }
 
-//void uart_send_init(void)
-//{
-//	uart_tx.head = 0;
-//	uart_tx.tail = 0;
-//
-//    NVIC_SetPriority(USART1_IRQn, 1);
-//    NVIC_EnableIRQ(USART1_IRQn);
-//}
+void USART_EnableIRQ(UART_Handle_t *huart, uint8_t irqn_priority)
+{
+	if (!huart || !huart->Instance) return;
 
-//bool uart_send_byte_it(uint8_t byte)
-//{
-//    if (!ring_buffer_put(&uart_tx, byte))
-//        return false;
-//    USART1->CR1 |= USART_CR1_TXEIE;
-//    return true;
-//}
-//
-//void uart_send_data_it(uint8_t *data, uint16_t len)
-//{
-//    while(len--)
-//    {
-//        uart_send_byte_it(*data++);
-//    }
-//}
-//
-//
-//void uart_send_string_it(const char *str)
-//{
-//    while (*str)
-//    {
-//    	if(!uart_send_byte_it(*str++))
-//    		break;
-//    }
-//}
-//
-//void USART1_IRQHandler(void)
-//{
-//    if (USART1->ISR & USART_ISR_TXE)
-//    {
-//        uint8_t data;
-//        if (ring_buffer_get(&uart_tx, &data))
-//            USART1->TDR = data;
-//        else
-//            USART1->CR1 &= ~USART_CR1_TXEIE;
-//    }
-//}
+	huart->rx_buffer.head = 0;
+	huart->rx_buffer.tail = 0;
+	huart->tx_buffer.head = 0;
+	huart->tx_buffer.tail = 0;
+
+	IRQn_Type irqn;
+	if(huart->Instance == USART1)
+	{
+		irqn = USART1_IRQn;
+		g_usart1 = huart;
+	}
+	else if(huart->Instance == USART2)
+	{
+		irqn = USART2_IRQn;
+		g_usart2 = huart;
+	}
+	else if(huart->Instance == LPUART1)
+	{
+		irqn = LPUART1_IRQn;
+		g_lpuart1 = huart;
+	}
+
+	else return;
+
+    NVIC_SetPriority(irqn, irqn_priority);
+    NVIC_EnableIRQ(irqn);
+}
+
+bool USART_Send_Byte_IT(UART_Handle_t *huart, uint8_t byte)
+{
+	if (!huart || !huart->Instance) return false;
+
+    if (!ring_buffer_put(&huart->tx_buffer, byte))
+        return false;
+
+    huart->Instance->CR1 |= USART_CR1_TXEIE;
+
+    return true;
+}
+
+uint16_t USART_Send_Data_IT(UART_Handle_t *huart, const uint8_t *data, uint16_t len)
+{
+    if (!huart || !huart->Instance || !data) return 0;
+    uint16_t n = 0;
+    while (len--) {
+        if (!USART_Send_Byte_IT(huart, *data++)) break;
+        n++;
+    }
+    return n;
+}
+
+
+void USART_Send_String_IT(UART_Handle_t *huart,const char *str)
+{
+	if (!huart || !huart->Instance || str == NULL) return;
+    while (*str)
+    {
+    	if(!USART_Send_Byte_IT(huart, *str++))
+    		break;
+    }
+}
+
+void USART1_IRQHandler(void)
+{
+	if (!g_usart1) return;
+
+	uint32_t isr = USART1->ISR;
+
+	//overrun
+    if (isr & USART_ISR_ORE) {
+        (void)USART1->RDR;                         // очистить ORE
+        USART1->ICR |= USART_ICR_ORECF;
+    }
+
+    if (isr & USART_ISR_TXE)
+    {
+        uint8_t data;
+        if (ring_buffer_get(&g_usart1->tx_buffer, &data))
+            USART1->TDR = data;
+        else
+            USART1->CR1 &= ~USART_CR1_TXEIE;
+    }
+
+    if(isr & USART_ISR_RXNE)
+    {
+    	USART1->CR1 &= ~USART_CR1_RXNEIE;
+    }
+}
+
+void USART2_IRQHandler(void)
+{
+	if (!g_usart2) return;
+
+	uint32_t isr = USART2->ISR;
+
+    if (isr & USART_ISR_ORE) {
+        (void)USART2->RDR;                         // очистить ORE
+
+        USART2->ICR |= USART_ICR_ORECF;
+    }
+    if (isr & USART_ISR_TXE)
+    {
+        uint8_t data;
+        if (ring_buffer_get(&g_usart2->tx_buffer, &data))
+            USART2->TDR = data;
+        else
+            USART2->CR1 &= ~USART_CR1_TXEIE;
+    }
+
+    if(isr & USART_ISR_RXNE)
+    {
+    	USART2->CR1 &= ~USART_CR1_RXNEIE;
+    }
+}
