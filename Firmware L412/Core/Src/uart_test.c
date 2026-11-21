@@ -77,4 +77,17 @@ void USART_Init_Test_IT()
 	USART_Send_Byte_IT(&uart1, 'X');
 	USART_Send_Byte_IT(&uart1, '\r');
 	USART_Send_Byte_IT(&uart1, '\n');
+
+	char msg[16] = "Hello World\r\n";
+	USART_Send_String_IT(&uart1, msg);
+}
+
+uint8_t c = 48;
+void USART_While_Test_IT()
+{
+	USART_Send_Byte_IT(&uart1, c);
+	c++;
+	if(c > 68) c = 48;
+
+	HAL_Delay(1000);
 }

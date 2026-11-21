@@ -136,8 +136,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  USART_While_Test();
-
+	  //USART_While_Test();
+	  USART_While_Test_IT();
 
     /* USER CODE END WHILE */
 

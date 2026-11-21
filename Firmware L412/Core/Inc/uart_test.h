@@ -16,6 +16,7 @@ void USART_Init_Test();
 void USART_While_Test();
 
 void USART_Init_Test_IT();
+void USART_While_Test_IT();
 
 
 #endif /* INC_UART_TEST_H_ */
