@@ -10,6 +10,25 @@
 
 //static RingBuffer uart_tx;
 
+/*
+ * @brief Initializes USART according to the fields of the structure
+ *
+ * Enables the peripheral clock, resets CR1/CR2/CR3, calculates the BRR
+ * based on the bus frequency and the desired baud rate, and enables the transmitter and receiver.
+ * Once this function has been called, the port is ready to perform transmit and receive
+ * operations in blocking mode (default format: 8N1).
+ *
+* @param  huart  Pointer to a UART handle. The Instance, pclk, and baudrate fields
+*                must be populated prior to the call. The pclk field represents the bus frequency:
+*                APB2 for USART1, and APB1 for USART2.
+* @note   GPIO configuration (pins, AF) must be performed BEFORE calling this
+*         function — the driver configures only the peripheral itself.
+*
+* @note   The USART clock source is selected in RCC->CCIPR. By default
+*         (CCIPR = 00), PCLK is used, which is what this function expects.
+*
+* @retval None
+ */
 void USART_Init(UART_Handle_t *huart)
 {
 	if (!huart || !huart->Instance || !huart->baudrate || !huart->pclk) return;
@@ -103,6 +122,14 @@ bool UART_SendBuf(UART_Handle_t *huart, const uint8_t *buf, uint16_t len, uint32
     {
         if (!UART_SendByte(huart, buf[i], timeout_per_byte))
             return false;  // timeout at a certain byte
+    }
+
+    // Дождаться TC: гарантирует, что последний байт физически ушёл из сдвигового регистра
+    uint32_t t = timeout_per_byte;
+    while (!(huart->Instance->ISR & USART_ISR_TC)) {
+        if (t == 0)
+            return false;
+        t--;
     }
     return true;
 }
