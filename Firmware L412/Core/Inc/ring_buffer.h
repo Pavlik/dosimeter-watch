@@ -21,10 +21,10 @@ typedef struct
     volatile uint16_t tail;
 } RingBuffer;
 
-uint8_t ring_buffer_next_index(uint8_t index);
-bool ring_buffer_is_full(RingBuffer *buf);
-bool ring_buffer_is_empty(RingBuffer *buf);
-uint8_t ring_buffer_count(RingBuffer *buf);
+
+bool ring_buffer_is_full(const RingBuffer *buf);
+bool ring_buffer_is_empty(const RingBuffer *buf);
+uint16_t ring_buffer_count(const RingBuffer *buf);
 bool ring_buffer_get(RingBuffer *buf, uint8_t *data);
 bool ring_buffer_put(RingBuffer *buf, uint8_t data);
 
