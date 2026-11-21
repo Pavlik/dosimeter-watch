@@ -48,10 +48,11 @@ bool UART_SendByte(UART_Handle_t *huart, uint8_t data, uint32_t timeout);
 bool UART_RecvByte(UART_Handle_t *huart, uint8_t *data, uint32_t timeout);
 bool UART_SendBuf(UART_Handle_t *huart, const uint8_t *buf, uint16_t len, uint32_t timeout_per_byte);
 bool UART_RecvBuf(UART_Handle_t *huart, uint8_t *buf, uint16_t len, uint32_t timeout_per_byte);
-//void uart_send_init(void);
-//bool uart_send_byte_it(uint8_t byte);
-//void uart_send_string_it(const char *str);
-//void uart_send_data_it(uint8_t *data, uint16_t len);
+
+bool USART_Send_Byte_IT(UART_Handle_t *huart, uint8_t byte);
+uint16_t USART_Send_Data_IT(UART_Handle_t *huart, const uint8_t *data, uint16_t len);
+void USART_Send_String_IT(UART_Handle_t *huart,const char *str);
+
 
 
 

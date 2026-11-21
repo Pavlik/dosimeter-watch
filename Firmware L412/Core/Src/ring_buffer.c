@@ -63,6 +63,8 @@ bool ring_buffer_put(RingBuffer *buf, uint8_t data)
 	if (!buf) return false;
     if (ring_buffer_is_full(buf)) return false;
 
+    buf->buffer[buf->head] = data;
+
     uint16_t h = ring_buffer_next_index(buf->head);
     buf->head = h;   // сначала данные, потом head (для producer)
 

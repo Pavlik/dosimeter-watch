@@ -126,8 +126,8 @@ int main(void)
 // 	TIM16->CR1 |= TIM_CR1_CEN;
 //
 // 	/*TIM16 CONFIG END*/
- 	USART_Init_Test();
-
+ 	//USART_Init_Test();
+ 	USART_Init_Test_IT();
 
 
   /* USER CODE END 2 */

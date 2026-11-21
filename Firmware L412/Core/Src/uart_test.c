@@ -69,3 +69,12 @@ void USART_While_Test()
     // Таймаут каждые 100 мс — просто продолжаем цикл
 }
 
+void USART_Init_Test_IT()
+{
+	USART_Init(&uart1);
+	USART_EnableIRQ(&uart1, 1);
+
+	USART_Send_Byte_IT(&uart1, 'X');
+	USART_Send_Byte_IT(&uart1, '\r');
+	USART_Send_Byte_IT(&uart1, '\n');
+}
