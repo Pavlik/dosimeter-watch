@@ -179,6 +179,8 @@ void USART_EnableIRQ(UART_Handle_t *huart, uint8_t irqn_priority)
 
 	else return;
 
+	huart->Instance->CR1 |= USART_CR1_RXNEIE;
+
     NVIC_SetPriority(irqn, irqn_priority);
     NVIC_EnableIRQ(irqn);
 }
@@ -217,26 +219,29 @@ void USART_Send_String_IT(UART_Handle_t *huart,const char *str)
     }
 }
 
-void USART1_IRQHandler(void)
+static void USART_IRQ_Handler(UART_Handle_t *huart)
 {
-	if (!g_usart1) return;
+	if (!huart) return;
 
-	uint32_t isr = USART1->ISR;
-
-	//overrun
-    if (isr & USART_ISR_ORE) {
-        (void)USART1->RDR;                         // очистить ORE
-        USART1->ICR |= USART_ICR_ORECF;
-    }
+	USART_TypeDef *u = huart->Instance;
+	uint32_t isr = u->ISR;
 
     if (isr & USART_ISR_TXE)
     {
         uint8_t data;
-        if (ring_buffer_get(&g_usart1->tx_buffer, &data))
-            USART1->TDR = data;
+        if (ring_buffer_get(&huart->tx_buffer, &data))
+            u->TDR = data;
         else
-            USART1->CR1 &= ~USART_CR1_TXEIE;
+            u->CR1 &= ~USART_CR1_TXEIE;
     }
+
+	//overrun
+    if (isr & USART_ISR_ORE) {
+        (void)u->RDR;                         // очистить ORE
+        u->ICR |= USART_ICR_ORECF;
+    }
+
+
 
     if(isr & USART_ISR_RXNE)
     {
@@ -244,28 +249,6 @@ void USART1_IRQHandler(void)
     }
 }
 
-void USART2_IRQHandler(void)
-{
-	if (!g_usart2) return;
+void USART1_IRQHandler(void) { USART_IRQ_Handler(g_usart1); }
 
-	uint32_t isr = USART2->ISR;
-
-    if (isr & USART_ISR_ORE) {
-        (void)USART2->RDR;                         // очистить ORE
-
-        USART2->ICR |= USART_ICR_ORECF;
-    }
-    if (isr & USART_ISR_TXE)
-    {
-        uint8_t data;
-        if (ring_buffer_get(&g_usart2->tx_buffer, &data))
-            USART2->TDR = data;
-        else
-            USART2->CR1 &= ~USART_CR1_TXEIE;
-    }
-
-    if(isr & USART_ISR_RXNE)
-    {
-    	USART2->CR1 &= ~USART_CR1_RXNEIE;
-    }
-}
+void USART2_IRQHandler(void) { USART_IRQ_Handler(g_usart2); }
