@@ -208,13 +208,6 @@ uint16_t USART_Send_Data_IT(UART_Handle_t *huart, const uint8_t *data, uint16_t 
     return n;
 }
 
-bool USART_Read_Byte(UART_Handle_t *huart, uint8_t *data)
-{
-    if (!huart || !huart->Instance || !data) return false;
-    return ring_buffer_get(&huart->rx_buffer, data);
-}
-
-
 void USART_Send_String_IT(UART_Handle_t *huart,const char *str)
 {
 	if (!huart || !huart->Instance || str == NULL) return;
@@ -225,15 +218,15 @@ void USART_Send_String_IT(UART_Handle_t *huart,const char *str)
     }
 }
 
-
 /*
  * @retval: true - byte was read, false - buffer is empty
  */
-bool USART_Read_Byte_IT(UART_Handle_t * huart, uint8_t *data)
+bool USART_Read_Byte_IT(UART_Handle_t *huart, uint8_t *data)
 {
     if (!huart || !huart->Instance || !data) return false;
     return ring_buffer_get(&huart->rx_buffer, data);
 }
+
 
 /*
  * @retval: uint16_t - number of bytes read. If les than len - the buffer became empty before end of data array
@@ -259,6 +252,18 @@ static void USART_IRQ_Handler(UART_Handle_t *huart)
 	USART_TypeDef *u = huart->Instance;
 	uint32_t isr = u->ISR;
 
+	//overrun
+    if (isr & USART_ISR_ORE)
+    {
+        u->ICR |= USART_ICR_ORECF;
+        huart->rx_overflow++;
+    }
+
+    if(isr & USART_ISR_RXNE)
+    {
+    	uint8_t data = (uint8_t)(u->RDR & 0xFFU);
+        (void)ring_buffer_put(&huart->rx_buffer, data);
+    }
     if (isr & USART_ISR_TXE)
     {
         uint8_t data;
@@ -268,21 +273,6 @@ static void USART_IRQ_Handler(UART_Handle_t *huart)
             u->CR1 &= ~USART_CR1_TXEIE;
     }
 
-	//overrun
-    if (isr & USART_ISR_ORE)
-    {
-        u->ICR |= USART_ICR_ORECF;
-    }
-
-    if(isr & USART_ISR_RXNE)
-    {
-    	uint8_t data = (uint8_t)(u->RDR & 0xFFU);
-        (void)ring_buffer_put(&huart->rx_buffer, data);
-        if (!ring_buffer_put(&huart->rx_buffer, data))
-            huart->rx_overflow++;   // диагностика
-        /* Если буфер полон — байт теряется. Можно считать overflow-счётчик,
-           но для UART это сигнал, что задача не успевает читать. */
-    }
 
 }
 

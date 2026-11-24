@@ -78,16 +78,25 @@ void USART_Init_Test_IT()
 	USART_Send_Byte_IT(&uart1, '\r');
 	USART_Send_Byte_IT(&uart1, '\n');
 
-	char msg[16] = "Hello World\r\n";
-	USART_Send_String_IT(&uart1, msg);
+	//char msg[16] = "Hello World\r\n";
+	USART_Send_String_IT(&uart1, "Ready. Type something:\r\n");
 }
+uint8_t buf[32];
 
-uint8_t c = 48;
+//uint8_t c = 48;
 void USART_While_Test_IT()
 {
-	USART_Send_Byte_IT(&uart1, c);
-	c++;
-	if(c > 68) c = 48;
+	uint8_t ch;
+    while (USART_Read_Byte_IT(&uart1, &ch))
+    {
+        USART_Send_Byte_IT(&uart1, ch);   // эхо
+    }
 
-	HAL_Delay(1000);
+    RingBuffer buffer;
+    buffer = uart1.rx_buffer;
+//	USART_Send_Byte_IT(&uart1, c);
+//	c++;
+//	if(c > 68) c = 48;
+//
+//	HAL_Delay(1000);
 }
