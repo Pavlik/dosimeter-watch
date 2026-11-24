@@ -245,15 +245,12 @@ static void USART_IRQ_Handler(UART_Handle_t *huart)
     {
     	uint8_t data = (uint8_t)(u->RDR & 0xFFU);
         (void)ring_buffer_put(&huart->rx_buffer, data);
+        if (!ring_buffer_put(&huart->rx_buffer, data))
+            huart->rx_overflow++;   // диагностика
         /* Если буфер полон — байт теряется. Можно считать overflow-счётчик,
            но для UART это сигнал, что задача не успевает читать. */
     }
 
-
-//    if(isr & USART_ISR_RXNE)
-//    {
-//    	USART1->CR1 &= ~USART_CR1_RXNEIE;
-//    }
 }
 
 void USART1_IRQHandler(void) { USART_IRQ_Handler(g_usart1); }

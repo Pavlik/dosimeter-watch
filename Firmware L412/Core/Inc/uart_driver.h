@@ -21,12 +21,6 @@ typedef struct
 {
     USART_TypeDef *Instance;
 
-//    uint8_t *rx_buf;
-//    uint16_t rx_size;
-//    uint8_t *tx_buf;
-//    uint16_t tx_size;
-
-
     uint32_t baudrate;   // speed
     uint32_t pclk;       // bus clock APB2 for USART1, APB1 for USART2/3 и LPUART1
     uint8_t word_length;   // 7/8/9
@@ -35,8 +29,9 @@ typedef struct
 
     RingBuffer rx_buffer;
     RingBuffer tx_buffer;
-//    volatile uint16_t head;
-//    volatile uint16_t tail;
+
+    volatile uint32_t rx_overflow;   // сколько байт потеряно из-за полного rx_buffer
+
 } UART_Handle_t;
 
 
