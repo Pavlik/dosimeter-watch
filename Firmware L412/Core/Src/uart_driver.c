@@ -208,6 +208,12 @@ uint16_t USART_Send_Data_IT(UART_Handle_t *huart, const uint8_t *data, uint16_t 
     return n;
 }
 
+bool USART_Read_Byte(UART_Handle_t *huart, uint8_t *data)
+{
+    if (!huart || !huart->Instance || !data) return false;
+    return ring_buffer_get(&huart->rx_buffer, data);
+}
+
 
 void USART_Send_String_IT(UART_Handle_t *huart,const char *str)
 {
@@ -217,6 +223,33 @@ void USART_Send_String_IT(UART_Handle_t *huart,const char *str)
     	if(!USART_Send_Byte_IT(huart, *str++))
     		break;
     }
+}
+
+
+/*
+ * @retval: true - byte was read, false - buffer is empty
+ */
+bool USART_Read_Byte_IT(UART_Handle_t * huart, uint8_t *data)
+{
+    if (!huart || !huart->Instance || !data) return false;
+    return ring_buffer_get(&huart->rx_buffer, data);
+}
+
+/*
+ * @retval: uint16_t - number of bytes read. If les than len - the buffer became empty before end of data array
+ */
+uint16_t USART_Read_Buf_IT(UART_Handle_t * huart, uint8_t *buf, uint16_t len)
+{
+	if (!huart || !huart->Instance || !buf || len == 0) return 0;
+	uint16_t n = 0;
+	while(n < len)
+	{
+		uint8_t data;
+		if(!ring_buffer_get(&huart->rx_buffer, &data))
+			break;
+		buf[n++] = data;
+	}
+	return n;
 }
 
 static void USART_IRQ_Handler(UART_Handle_t *huart)

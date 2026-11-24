@@ -47,6 +47,8 @@ bool UART_RecvBuf(UART_Handle_t *huart, uint8_t *buf, uint16_t len, uint32_t tim
 bool USART_Send_Byte_IT(UART_Handle_t *huart, uint8_t byte);
 uint16_t USART_Send_Data_IT(UART_Handle_t *huart, const uint8_t *data, uint16_t len);
 void USART_Send_String_IT(UART_Handle_t *huart,const char *str);
+bool USART_Read_Byte_IT(UART_Handle_t * huart, uint8_t *data);
+uint16_t USART_Read_Buf_IT(UART_Handle_t * huart, uint8_t *buf, uint16_t len);
 
 
 
