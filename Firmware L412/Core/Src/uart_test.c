@@ -83,20 +83,46 @@ void USART_Init_Test_IT()
 }
 uint8_t buf[32];
 
-//uint8_t c = 48;
-void USART_While_Test_IT()
+// calls from while
+static void Echo_Test()
 {
 	uint8_t ch;
     while (USART_Read_Byte_IT(&uart1, &ch))
     {
         USART_Send_Byte_IT(&uart1, ch);   // эхо
+        GPIOA->ODR ^= GPIO_ODR_OD3;
     }
+}
 
-    RingBuffer buffer;
-    buffer = uart1.rx_buffer;
-//	USART_Send_Byte_IT(&uart1, c);
-//	c++;
-//	if(c > 68) c = 48;
-//
-//	HAL_Delay(1000);
+static void Control_Led()
+{
+	uint8_t byte;
+	while((USART_Read_Byte_IT(&uart1, &byte)))
+	{
+		switch(byte)
+		{
+		case '1':
+			GPIOA->BSRR =  GPIO_BSRR_BS3;
+			USART_Send_String_IT(&uart1, "LED is ON \r\n");
+			break;
+		case '0':
+			GPIOA->BSRR =  GPIO_BSRR_BR3;
+			USART_Send_String_IT(&uart1, "LED is OFF \r\n");
+			break;
+		case '?':
+			if(GPIOA->IDR & GPIO_IDR_ID3)
+				USART_Send_String_IT(&uart1, "State: ON\r\n");
+			else
+				USART_Send_String_IT(&uart1, "State: OFF\r\n");
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+//uint8_t c = 48;
+void USART_While_Test_IT()
+{
+	Control_Led();
 }
