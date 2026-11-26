@@ -116,13 +116,76 @@ static void Control_Led()
 				USART_Send_String_IT(&uart1, "State: OFF\r\n");
 			break;
 		default:
+			/* Игнорируем \r, \n и прочее */
 			break;
 		}
 	}
 }
 
 //uint8_t c = 48;
+
+static void process_command(const char *cmd, uint16_t len)
+{
+    /* cmd не нуль-терминирован! len — реальная длина. */
+
+    /* Уберём \r\n в конце */
+	while(len > 0 && (cmd[len-1] == '\r' || cmd[len-1] == '\n'))
+		len--;
+	/* Сравнение без нуль-терминатора: используем strncmp с len */
+	if(len == 6 && strncmp(cmd, "LED:ON", 6) == 0)
+	{
+		GPIOA->BSRR =  GPIO_BSRR_BR3;
+		USART_Send_String_IT(&uart1, "LED is ON \r\n");
+	}
+	else if(len == 7 && strncmp(cmd, "LED:OFF", 7) == 0)
+	{
+		GPIOA->BSRR =  GPIO_BSRR_BS3;
+		USART_Send_String_IT(&uart1, "LED is OFF \r\n");
+	}
+	else if(len == 9 && strncmp(cmd, "LED:STATE", 9) == 0)
+	{
+		if(GPIOA->IDR & GPIO_IDR_ID3)
+			USART_Send_String_IT(&uart1, "State: OFF\r\n");
+		else
+			USART_Send_String_IT(&uart1, "State: ON\r\n");
+	}
+	else
+		USART_Send_String_IT(&uart1, "ERR: unknown command\r\n");
+}
+
+uint8_t buf[32];
+uint16_t pos = 0;   /* сколько байт накоплено в buf */
+
+void control_led_by_command()
+{
+	 uint8_t ch;
+	 while (USART_Read_Byte_IT(&uart1, &ch))
+	 {
+		 if (ch == '\n' || ch == '\r')
+		 {
+			 if(pos > 0)
+			 {
+				 process_command((const char *)buf, pos);
+				 pos = 0; // reset
+			 }
+			 /* несколько \r\n подряд — просто игнорируем пустые строки */
+		 }
+		 else if(pos < sizeof(buf))
+		 {
+			 buf[pos++] = ch;
+		 }
+		 else
+		 {
+			 //overflow of string - reset and error
+			 pos = 0;
+			 USART_Send_String_IT(&uart1, "ERR: line too long\r\n");
+		 }
+	 }
+
+
+}
+
 void USART_While_Test_IT()
 {
-	Control_Led();
+	control_led_by_command();
 }
