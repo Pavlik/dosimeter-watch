@@ -31,11 +31,30 @@ typedef struct
     RingBuffer tx_buffer;
 
     volatile uint32_t rx_overflow;   // сколько байт потеряно из-за полного rx_buffer
+    DMA_TypeDef *dma;
+    DMA_Channel_TypeDef *dma_channel;
 
 } UART_Handle_t;
 
+typedef enum
+{
+	DMA_MODE_NORMAL = 0,
+	DMA_MODE_CIRCULAR
+} DMA_Mode;
+
+typedef enum
+{
+	DMA_USART_TX_ENABLE = 0,
+	DMA_USART_TX_DISABLE,
+	DAM_USART_RX_ENABLE,
+	DMA_USART_RX_DISABLE
+}DMA_USART_tx_rx_enable;
+
 
 void USART_Init(UART_Handle_t *huart);
+void USART_DMA_Enable_TR(UART_Handle_t *huart);
+void USART_DMA_Disable_TR(UART_Handle_t *huart);
+
 void LPUART_Init(UART_Handle_t *huart);
 void USART_EnableIRQ(UART_Handle_t *huart, uint8_t irqn_priority);
 

@@ -64,6 +64,55 @@ void USART_Init(UART_Handle_t *huart)
 						 | USART_CR1_UE; // ENABLE UART
 }
 
+void USART_DMA_Enable_TR(UART_Handle_t *huart)
+{
+	if (!huart || !huart->Instance) return;
+	huart->Instance->CR3 |= USART_CR3_DMAT;
+}
+
+void USART_DMA_Disable_TR(UART_Handle_t *huart)
+{
+	if (!huart || !huart->Instance) return;
+	huart->Instance->CR3 &= ~USART_CR3_DMAT;
+}
+
+void DMA_USART_Init(UART_Handle_t *huart, DMA_USART_tx_rx_enable tx, uint8_t *buffer, uint16_t length, DMA_Mode mode)
+{
+	if (!huart || !huart->Instance) return;
+
+	if(huart->dma == DMA1)
+		RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
+	else if(huart->dma == DMA2)
+		RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
+	else
+		return;
+
+	huart->dma_channel = 0;
+
+	huart->dma_channel->CCR &= ~DMA_CCR_EN;
+
+	huart->dma_channel->CCR |= DMA_CCR_DIR; // Memory -> Peripheral:
+	huart->dma_channel->CCR |= DMA_CCR_MINC; // increment of memory
+	huart->dma_channel->CCR &= ~DMA_CCR_PINC; // don't increment Peripheral
+
+	huart->dma_channel->CCR &= ~DMA_CCR_MSIZE; // reset to 00 - 8 bits
+	huart->dma_channel->CCR &= ~DMA_CCR_PSIZE; // reset to 00 - 8 bits
+
+	huart->dma_channel->CPAR = (uint32_t)&huart->Instance->TDR;
+	huart->dma_channel->CMAR = (uint32_t)buffer;
+
+	huart->dma_channel->CNDTR = length;
+
+	if(mode == DMA_MODE_CIRCULAR)
+		huart->dma_channel->CCR |= DMA_CCR_CIRC;
+
+	huart->dma_channel->CCR |= DMA_CCR_HTIE | DMA_CCR_TCIE; //enable half-transmit and transfer complete interruptions
+
+	huart->dma_channel->CCR |= DMA_CCR_EN;
+
+	USART_DMA_Enable_TR(huart);
+}
+
 void LPUART_Init(UART_Handle_t *huart)
 {
 	if (!huart || !huart->Instance || !huart->baudrate || !huart->pclk) return;
