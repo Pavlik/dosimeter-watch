@@ -15,6 +15,7 @@ UART_Handle_t uart1 =
 };
 static uint8_t ch;
 
+
 void USART_Init_Test()
 {
 	USART_Init(&uart1);
@@ -184,6 +185,21 @@ void control_led_by_command()
 
 
 }
+
+
+char msg[] = "Hello DMA!\r\n";
+char msg1[] = "Fuck up!\r\n";
+void init_test()
+{
+	USART_Init(&uart1);
+	DMA1_USART1_Init_Tx(&uart1, DMA_MODE_NORMAL);
+	DMA1_USART1_Enable_IRQ(&uart1, 2);
+
+	DMA1_USART1_Send(&uart1, (uint8_t*)msg, 12);
+	while(uart1.tx_busy) {}
+	DMA1_USART1_Send(&uart1, (uint8_t*)msg1, strlen(msg1));
+}
+
 
 void USART_While_Test_IT()
 {

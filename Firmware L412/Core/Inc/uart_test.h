@@ -14,6 +14,7 @@
 
 void USART_Init_Test();
 void USART_While_Test();
+void init_test();
 
 void USART_Init_Test_IT();
 void USART_While_Test_IT();

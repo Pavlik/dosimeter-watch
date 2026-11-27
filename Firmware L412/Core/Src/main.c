@@ -127,7 +127,8 @@ int main(void)
 //
 // 	/*TIM16 CONFIG END*/
  	//USART_Init_Test();
- 	USART_Init_Test_IT();
+// 	USART_Init_Test_IT();
+ 	init_test();
 
 
   /* USER CODE END 2 */
@@ -137,7 +138,7 @@ int main(void)
   while (1)
   {
 	  //USART_While_Test();
-	  USART_While_Test_IT();
+	  //USART_While_Test_IT();
 
     /* USER CODE END WHILE */
 

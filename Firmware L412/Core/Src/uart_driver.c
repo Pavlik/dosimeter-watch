@@ -64,54 +64,69 @@ void USART_Init(UART_Handle_t *huart)
 						 | USART_CR1_UE; // ENABLE UART
 }
 
-void USART_DMA_Enable_TR(UART_Handle_t *huart)
+static void USART_DMA_Enable_TR(UART_Handle_t *huart)
 {
 	if (!huart || !huart->Instance) return;
 	huart->Instance->CR3 |= USART_CR3_DMAT;
 }
 
-void USART_DMA_Disable_TR(UART_Handle_t *huart)
+static void USART_DMA_Disable_TR(UART_Handle_t *huart)
 {
 	if (!huart || !huart->Instance) return;
 	huart->Instance->CR3 &= ~USART_CR3_DMAT;
 }
 
-void DMA_USART_Init(UART_Handle_t *huart, DMA_USART_tx_rx_enable tx, uint8_t *buffer, uint16_t length, DMA_Mode mode)
+// only for USART1 and DMA1
+void DMA1_USART1_Init_Tx(UART_Handle_t *huart, DMA_Mode mode)
 {
 	if (!huart || !huart->Instance) return;
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
 
-	if(huart->dma == DMA1)
-		RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
-	else if(huart->dma == DMA2)
-		RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
-	else
-		return;
+	DMA1_CSELR->CSELR |= (0b0010 << DMA_CSELR_C4S_Pos);
 
-	huart->dma_channel = 0;
+	DMA1_Channel4->CCR &= ~DMA_CCR_EN;
 
-	huart->dma_channel->CCR &= ~DMA_CCR_EN;
-
-	huart->dma_channel->CCR |= DMA_CCR_DIR; // Memory -> Peripheral:
-	huart->dma_channel->CCR |= DMA_CCR_MINC; // increment of memory
-	huart->dma_channel->CCR &= ~DMA_CCR_PINC; // don't increment Peripheral
-
-	huart->dma_channel->CCR &= ~DMA_CCR_MSIZE; // reset to 00 - 8 bits
-	huart->dma_channel->CCR &= ~DMA_CCR_PSIZE; // reset to 00 - 8 bits
-
-	huart->dma_channel->CPAR = (uint32_t)&huart->Instance->TDR;
-	huart->dma_channel->CMAR = (uint32_t)buffer;
-
-	huart->dma_channel->CNDTR = length;
+	DMA1_Channel4->CPAR  = (uint32_t)&huart->Instance->TDR;
 
 	if(mode == DMA_MODE_CIRCULAR)
-		huart->dma_channel->CCR |= DMA_CCR_CIRC;
+		DMA1_Channel4->CCR |= DMA_CCR_CIRC;
 
-	huart->dma_channel->CCR |= DMA_CCR_HTIE | DMA_CCR_TCIE; //enable half-transmit and transfer complete interruptions
+	DMA1_Channel4->CCR |= DMA_CCR_MINC | DMA_CCR_DIR;
+}
 
-	huart->dma_channel->CCR |= DMA_CCR_EN;
+bool DMA1_USART1_Send(UART_Handle_t *huart, uint8_t *data, uint16_t len)
+{
+    if (huart->tx_busy) return false;
+
+    huart->tx_busy = true;
+	DMA1_Channel4->CCR &= ~DMA_CCR_EN;
+
+	DMA1_Channel4->CMAR  = (uint32_t)data;
+	DMA1_Channel4->CNDTR = len;
 
 	USART_DMA_Enable_TR(huart);
+	DMA1_Channel4->CCR |= DMA_CCR_EN;
+
+	return true;
+
 }
+
+void DMA1_USART1_Enable_IRQ(UART_Handle_t *huart, uint8_t irqn_priority)
+{
+	DMA1_Channel4->CCR &= ~DMA_CCR_EN;
+
+	DMA1_Channel4->CCR |= DMA_CCR_HTIE | DMA_CCR_TCIE; //enable half-transmit and transfer complete interruptions
+
+	NVIC_SetPriority(DMA1_Channel4_IRQn, irqn_priority);
+	NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+	g_usart1 = huart;
+
+	DMA1_Channel4->CCR |= DMA_CCR_EN;
+
+
+}
+
+
 
 void LPUART_Init(UART_Handle_t *huart)
 {
@@ -328,3 +343,24 @@ static void USART_IRQ_Handler(UART_Handle_t *huart)
 void USART1_IRQHandler(void) { USART_IRQ_Handler(g_usart1); }
 
 void USART2_IRQHandler(void) { USART_IRQ_Handler(g_usart2); }
+
+void DMA1_Channel4_IRQHandler(void)
+{
+	if(DMA1->ISR & DMA_ISR_TCIF4)
+	{
+		DMA1->IFCR = DMA_IFCR_CTCIF4;
+
+		DMA1_Channel4->CCR &= ~DMA_CCR_EN;
+
+		USART1->CR3 &= ~USART_CR3_DMAT;
+		g_usart1->tx_busy = false;
+	}
+
+	if(DMA1->ISR & DMA_ISR_HTIF4)
+	{
+		DMA1->IFCR = DMA_IFCR_CHTIF4;
+		GPIOA->ODR ^= GPIO_ODR_OD3;
+	}
+
+
+}
